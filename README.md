@@ -7,13 +7,13 @@ A simple CLI for making a bulk STX transfer in one command.
   <!-- usage -->
 ```sh-session
 $ npm install -g @stacks/send-many-stx-cli
-$ @stacks/send-many-stx-cli COMMAND
+$ stx-bulk-transfer COMMAND
 running command...
-$ @stacks/send-many-stx-cli (-v|--version|version)
+$ stx-bulk-transfer (-v|--version|version)
 @stacks/send-many-stx-cli/0.1.1 darwin-x64 node-v14.15.1
-$ @stacks/send-many-stx-cli --help [COMMAND]
+$ stx-bulk-transfer --help [COMMAND]
 USAGE
-  $ @stacks/send-many-stx-cli COMMAND
+  $ stx-bulk-transfer COMMAND
 ...
 ```
 <!-- usagestop -->
@@ -21,15 +21,15 @@ USAGE
 # Commands
 
   <!-- commands -->
-* [`@stacks/send-many-stx-cli send-many [RECIPIENT]`](#stackssend-many-stx-cli-send-many-recipient)
+* [`stx-bulk-transfer send-many [RECIPIENT]`](#stx-bulk-transfer-send-many-recipient)
 
-## `@stacks/send-many-stx-cli send-many [RECIPIENT]`
+## `stx-bulk-transfer send-many [RECIPIENT]`
 
 Execute a bulk STX transfer.
 
 ```
 USAGE
-  $ @stacks/send-many-stx-cli send-many [RECIPIENT]
+  $ stx-bulk-transfer send-many [RECIPIENT]
 
 ARGUMENTS
   RECIPIENT  A set of recipients in the format of "address,amount_ustx"
@@ -51,6 +51,8 @@ OPTIONS
 
   -v, --verbose
 
+  --nonce=nonce                          Optionally specify a nonce for this transaction
+
 DESCRIPTION
   The bulk transfer is executed in a single transaction by invoking a `contract-call` on the "send-many" contract.
 
@@ -58,5 +60,12 @@ DESCRIPTION
 
      Testnet: https://explorer.stacks.co/txid/STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6.send-many?chain=testnet
      Mainnet: https://explorer.stacks.co/txid/not-deployed?chain=mainnet
+
+     Example usage:
+
+     ```
+     npx stx-bulk-transfer STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50 -k 
+  my_private_key -n testnet -b
+     ```
 ```
 <!-- commandsstop -->

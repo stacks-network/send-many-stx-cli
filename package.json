@@ -23,6 +23,9 @@
     "version": "oclif-dev readme && git add README.md",
     "typecheck": "tsc --noEmit"
   },
+  "bin": {
+    "stx-bulk-transfer": "./bin/run"
+  },
   "peerDependencies": {},
   "husky": {
     "hooks": {
@@ -30,7 +33,8 @@
     }
   },
   "oclif": {
-    "commands": "./src/commands"
+    "commands": "./src/commands",
+    "bin": "stx-bulk-transfer"
   },
   "prettier": {
     "printWidth": 80,
