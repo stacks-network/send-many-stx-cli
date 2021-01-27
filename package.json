@@ -2,7 +2,7 @@
   "name": "@stacks/send-many-stx-cli",
   "description": "A simple CLI for making a bulk STX transfer in one command.",
   "author": "Hiro PBC",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [

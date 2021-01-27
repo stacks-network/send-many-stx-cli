@@ -1,6 +1,13 @@
-# `@stacks/bulk-send-cli`
+# `@stacks/send-many-stx-cli`
 
 A simple CLI for making a bulk STX transfer in one command.
+
+It uses a Clarity contract to enable transfering STX to multiple recipients in one transaction.
+
+Default contracts used:
+
+Testnet: https://explorer.stacks.co/txid/STR8P3RD1EHA8AA37ERSSSZSWKS9T2GYQFGXNA4C.send-many?chain=testnet
+Mainnet: https://explorer.stacks.co/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many?chain=mainnet
 
 # Usage
 
@@ -10,7 +17,7 @@ $ npm install -g @stacks/send-many-stx-cli
 $ stx-bulk-transfer COMMAND
 running command...
 $ stx-bulk-transfer (-v|--version|version)
-@stacks/send-many-stx-cli/0.2.2 darwin-x64 node-v14.15.1
+@stacks/send-many-stx-cli/0.2.3 darwin-x64 node-v14.15.1
 $ stx-bulk-transfer --help [COMMAND]
 USAGE
   $ stx-bulk-transfer COMMAND
@@ -64,7 +71,7 @@ DESCRIPTION
 
      The default contracts can be found below:
 
-     Testnet: https://explorer.stacks.co/txid/STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6.send-many?chain=testnet
+     Testnet: https://explorer.stacks.co/txid/STR8P3RD1EHA8AA37ERSSSZSWKS9T2GYQFGXNA4C.send-many?chain=testnet
      Mainnet: https://explorer.stacks.co/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many?chain=mainnet
 
      Example usage:
