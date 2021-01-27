@@ -7,11 +7,13 @@ It uses a Clarity contract to enable transfering STX to multiple recipients in o
 Default contracts used:
 
 Testnet: https://explorer.stacks.co/txid/STR8P3RD1EHA8AA37ERSSSZSWKS9T2GYQFGXNA4C.send-many?chain=testnet
+
 Mainnet: https://explorer.stacks.co/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many?chain=mainnet
 
 # Usage
 
   <!-- usage -->
+
 ```sh-session
 $ npm install -g @stacks/send-many-stx-cli
 $ stx-bulk-transfer COMMAND
@@ -23,18 +25,20 @@ USAGE
   $ stx-bulk-transfer COMMAND
 ...
 ```
+
 <!-- usagestop -->
 
 # Commands
 
   <!-- commands -->
-* [`stx-bulk-transfer send-many [RECIPIENTS]`](#stx-bulk-transfer-send-many-recipients)
+
+- [`stx-bulk-transfer send-many [RECIPIENTS]`](#stx-bulk-transfer-send-many-recipients)
 
 ## `stx-bulk-transfer send-many [RECIPIENTS]`
 
 Execute a bulk STX transfer.
 
-```
+````
 USAGE
   $ stx-bulk-transfer send-many [RECIPIENTS]
 
@@ -77,10 +81,11 @@ DESCRIPTION
      Example usage:
 
      ```
-     npx stx-bulk-transfer STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50 -k 
+     npx stx-bulk-transfer STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50 -k
   my_private_key -n testnet -b
      ```
-```
+````
+
 <!-- commandsstop -->
 
 ## Development
