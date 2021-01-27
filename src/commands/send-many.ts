@@ -1,5 +1,5 @@
 import { Command, flags } from '@oclif/command';
-import { sendMany, Recipient, isNormalInteger } from '../builder';
+import { sendMany, Recipient, isNormalInteger, getAddress } from '../builder';
 import {
   StacksMocknet,
   StacksMainnet,
@@ -11,12 +11,14 @@ import {
   ChainID,
   validateStacksAddress,
 } from '@stacks/transactions';
+import { STXPostCondition } from '@stacks/transactions/dist/transactions/src/postcondition';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 
 const DEFAULT_TESTNET_CONTRACT =
   'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6.send-many';
-const DEFAULT_MAINNET_CONTRACT = 'not-deployed';
+const DEFAULT_MAINNET_CONTRACT =
+  'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many';
 
 export class SendMany extends Command {
   static description = `Execute a bulk STX transfer.
@@ -46,7 +48,8 @@ export class SendMany extends Command {
     broadcast: flags.boolean({
       char: 'b',
       default: false,
-      description: 'Whether to broadcast this transaction or not.',
+      description:
+        'Whether to broadcast this transaction. Omitting this flag will not broadcast the transaction.',
     }),
     network: flags.string({
       char: 'n',
@@ -57,10 +60,17 @@ export class SendMany extends Command {
     nodeUrl: flags.string({
       required: false,
       char: 'u',
+      description:
+        'A default node URL will be used based on the `network` option. Use this flag to manually override.',
     }),
-    verbose: flags.boolean({
-      char: 'v',
+    quiet: flags.boolean({
+      char: 'q',
       default: false,
+      description: `
+Reduce logging from this command. If this flag is passed with the broadcast (-b) flag,
+only the transaction ID will be logged. If the quiet flagged is passed without broadcast, 
+only the raw transaction hex will be logged.
+`,
     }),
     contractAddress: flags.string({
       char: 'c',
@@ -74,7 +84,7 @@ export class SendMany extends Command {
 
   static args = [
     {
-      name: 'recipient',
+      name: 'recipients',
       description: `
 A set of recipients in the format of "address,amount_ustx"
 Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50
@@ -132,27 +142,41 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
       network,
       senderKey: flags.privateKey,
       contractIdentifier,
+      nonce: flags.nonce,
     });
 
-    const { verbose } = flags;
+    const verbose = !flags.quiet;
 
-    if (verbose) this.log('Transaction hex:', tx.serialize().toString('hex'));
+    if (verbose) {
+      this.log('Transaction hex:', tx.serialize().toString('hex'));
+      this.log('Fee:', tx.auth.getFee().toString());
+      this.log('Nonce:', tx.auth.spendingCondition?.nonce.toNumber());
+      this.log('Contract:', contractIdentifier);
+      this.log('Sender:', getAddress(flags.privateKey, network));
+      const [postCondition] = tx.postConditions.values as STXPostCondition[];
+      this.log('Total amount:', postCondition.amount.toNumber());
+    }
 
     if (flags.broadcast) {
       const result = await broadcastTransaction(tx, network);
-      if (flags.verbose) {
-        this.log('Transaction ID:', result);
-        const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
-        this.log(
-          'View in explorer:',
-          `${explorerLink}?chain=${
-            network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
-          }`
-        );
+      if (typeof result === 'string') {
+        if (verbose) {
+          this.log('Transaction ID:', result);
+          const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
+          this.log(
+            'View in explorer:',
+            `${explorerLink}?chain=${
+              network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
+            }`
+          );
+        } else {
+          console.log(result.toString());
+        }
       } else {
-        console.log(result.toString());
+        this.log('Transaction rejected:', result);
+        process.exit(1);
       }
-    } else {
+    } else if (flags.quiet) {
       console.log(tx.serialize().toString('hex'));
     }
   }

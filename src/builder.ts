@@ -6,9 +6,11 @@ import {
   listCV,
   PostConditionMode,
   makeStandardSTXPostCondition,
-  PostCondition,
   FungibleConditionCode,
   SignedContractCallOptions,
+  getAddressFromPrivateKey,
+  TransactionVersion,
+  ChainID,
 } from '@stacks/transactions';
 import { StacksNetwork } from '@stacks/network';
 import BN from 'bn.js';
@@ -36,18 +38,16 @@ export async function sendMany({
   recipients,
   network,
   senderKey,
+  contractIdentifier,
   nonce,
 }: SendOptions) {
-  const postConditions: PostCondition[] = [];
+  const [contractAddress, contractName] = contractIdentifier.split('.');
+
+  const sender = getAddress(senderKey, network);
+  let sum = new BN(0, 10);
 
   const recipientTuples = recipients.map(recipient => {
-    postConditions.push(
-      makeStandardSTXPostCondition(
-        recipient.address,
-        FungibleConditionCode.Equal,
-        new BN(recipient.amount, 10)
-      )
-    );
+    sum = sum.add(new BN(recipient.amount, 10));
     return tupleCV({
       to: standardPrincipalCV(recipient.address),
       ustx: uintCV(recipient.amount),
@@ -57,13 +57,19 @@ export async function sendMany({
   const recipientListCV = listCV(recipientTuples);
 
   const options: SignedContractCallOptions = {
-    contractAddress: 'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
-    contractName: 'send-many',
+    contractAddress,
+    contractName,
     functionName: 'send-many',
     functionArgs: [recipientListCV],
     senderKey,
     postConditionMode: PostConditionMode.Deny,
-    postConditions,
+    postConditions: [
+      makeStandardSTXPostCondition(
+        sender,
+        FungibleConditionCode.Equal,
+        new BN(sum, 10)
+      ),
+    ],
     network,
   };
 
@@ -77,4 +83,12 @@ export async function sendMany({
 export function isNormalInteger(str: string) {
   var n = Math.floor(Number(str));
   return n !== Infinity && String(n) === str && n >= 0;
+}
+
+export function getAddress(privateKey: string, network: StacksNetwork) {
+  const transactionVersion =
+    network.chainId === ChainID.Mainnet
+      ? TransactionVersion.Mainnet
+      : TransactionVersion.Testnet;
+  return getAddressFromPrivateKey(privateKey, transactionVersion);
 }
