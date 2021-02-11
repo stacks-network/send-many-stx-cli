@@ -11,6 +11,10 @@ import {
   getAddressFromPrivateKey,
   TransactionVersion,
   ChainID,
+  StandardPrincipalCV,
+  UIntCV,
+  BufferCV,
+  bufferCVFromString,
 } from '@stacks/transactions';
 import { StacksNetwork } from '@stacks/network';
 import BN from 'bn.js';
@@ -24,6 +28,7 @@ export interface Recipient {
    * Amount to send in uSTX
    */
   amount: string;
+  memo?: string;
 }
 
 interface SendOptions {
@@ -32,6 +37,14 @@ interface SendOptions {
   senderKey: string;
   contractIdentifier: string;
   nonce?: number;
+  withMemo?: boolean;
+}
+
+interface RecipientTuple {
+  to: StandardPrincipalCV;
+  ustx: UIntCV;
+  memo?: BufferCV;
+  [key: string]: any;
 }
 
 export async function sendMany({
@@ -40,6 +53,7 @@ export async function sendMany({
   senderKey,
   contractIdentifier,
   nonce,
+  withMemo,
 }: SendOptions) {
   const [contractAddress, contractName] = contractIdentifier.split('.');
 
@@ -48,10 +62,14 @@ export async function sendMany({
 
   const recipientTuples = recipients.map(recipient => {
     sum = sum.add(new BN(recipient.amount, 10));
-    return tupleCV({
+    const recipientTuple: RecipientTuple = {
       to: standardPrincipalCV(recipient.address),
       ustx: uintCV(recipient.amount),
-    });
+    };
+    if (withMemo) {
+      recipientTuple.memo = bufferCVFromString(recipient.memo || '');
+    }
+    return tupleCV(recipientTuple);
   });
 
   const recipientListCV = listCV(recipientTuples);

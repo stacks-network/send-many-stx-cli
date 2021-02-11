@@ -1,4 +1,6 @@
-import { SendMany } from './commands/send-many';
 import { handle } from '@oclif/errors';
+import flush from '@oclif/command/flush';
 
-SendMany.run().then(null, handle);
+import { run } from '@oclif/command';
+
+run().then(flush, handle);

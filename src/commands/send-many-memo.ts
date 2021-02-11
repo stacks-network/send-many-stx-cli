@@ -16,13 +16,13 @@ import { STXPostCondition } from '@stacks/transactions/dist/transactions/src/pos
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 
 const DEFAULT_TESTNET_CONTRACT =
-  'STR8P3RD1EHA8AA37ERSSSZSWKS9T2GYQFGXNA4C.send-many';
+  'STR8P3RD1EHA8AA37ERSSSZSWKS9T2GYQFGXNA4C.send-many-memo';
 const DEFAULT_MAINNET_CONTRACT =
-  'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many';
+  'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many-memo';
 
-export class SendMany extends Command {
-  static description = `Execute a bulk STX transfer.
-  The bulk transfer is executed in a single transaction by invoking a \`contract-call\` on the "send-many" contract.
+export class SendManyMemo extends Command {
+  static description = `Execute a bulk STX transfer, with memos attached.
+  The bulk transfer is executed in a single transaction by invoking a \`contract-call\` on the "send-many-memo" contract.
 
   The default contracts can be found below:
 
@@ -32,7 +32,7 @@ export class SendMany extends Command {
   Example usage:
 
   \`\`\`
-  npx stx-bulk-transfer send-many STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50 -k my_private_key -n testnet -b
+  npx stx-bulk-transfer send-many-memo STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,hello ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50,memo2 -k my_private_key -n testnet -b
   \`\`\`
   `;
   // allow infinite arguments
@@ -75,7 +75,7 @@ only the raw transaction hex will be logged.
     contractAddress: flags.string({
       char: 'c',
       description:
-        'Manually specify the contract address for send-many. If omitted, default contracts will be used.',
+        'Manually specify the contract address for send-many-memo. If omitted, default contracts will be used.',
     }),
     nonce: flags.integer({
       description: 'Optionally specify a nonce for this transaction',
@@ -86,14 +86,14 @@ only the raw transaction hex will be logged.
     {
       name: 'recipients',
       description: `
-A set of recipients in the format of "address,amount_ustx"
-Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50
+A set of recipients in the format of "address,amount_ustx,memo". Memo is optional.
+Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50
       `,
     },
   ];
 
   getNetwork() {
-    const { flags } = this.parse(SendMany);
+    const { flags } = this.parse(SendManyMemo);
     const networks = {
       mainnet: StacksMainnet,
       testnet: StacksTestnet,
@@ -104,16 +104,16 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
   }
 
   getContract(network: StacksNetwork) {
-    return network.chainId === ChainID.Testnet
-      ? DEFAULT_TESTNET_CONTRACT
-      : DEFAULT_MAINNET_CONTRACT;
+    return network.chainId === ChainID.Mainnet
+      ? DEFAULT_MAINNET_CONTRACT
+      : DEFAULT_TESTNET_CONTRACT;
   }
 
   async run() {
-    const { argv, flags } = this.parse(SendMany);
+    const { argv, flags } = this.parse(SendManyMemo);
 
     const recipients: Recipient[] = argv.map(arg => {
-      const [address, amount] = arg.split(',');
+      const [address, amount, memo] = arg.split(',');
       if (!validateStacksAddress(address)) {
         throw new Error(`${address} is not a valid STX address`);
       }
@@ -123,6 +123,7 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
       return {
         address,
         amount,
+        memo,
       };
     });
 
@@ -143,18 +144,26 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
       senderKey: flags.privateKey,
       contractIdentifier,
       nonce: flags.nonce,
+      withMemo: true,
     });
 
     const verbose = !flags.quiet;
 
     if (verbose) {
-      this.log('Transaction hex:', tx.serialize().toString('hex'));
+      this.log('Recipients:');
+      recipients.forEach(r => {
+        this.log(`Address: ${r.address}`);
+        this.log(`Amount: ${r.amount}`);
+        this.log(`Memo: ${r.memo || ''}`);
+        this.log('----------');
+      });
       this.log('Fee:', tx.auth.getFee().toString());
       this.log('Nonce:', tx.auth.spendingCondition?.nonce.toNumber());
       this.log('Contract:', contractIdentifier);
       this.log('Sender:', getAddress(flags.privateKey, network));
       const [postCondition] = tx.postConditions.values as STXPostCondition[];
       this.log('Total amount:', postCondition.amount.toNumber());
+      this.log('Transaction hex:', tx.serialize().toString('hex'));
     }
 
     if (flags.broadcast) {
