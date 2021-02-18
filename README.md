@@ -18,7 +18,7 @@ $ npm install -g @stacks/send-many-stx-cli
 $ stx-bulk-transfer COMMAND
 running command...
 $ stx-bulk-transfer (-v|--version|version)
-@stacks/send-many-stx-cli/1.0.5 darwin-arm64 node-v15.8.0
+@stacks/send-many-stx-cli/1.0.8 darwin-arm64 node-v15.8.0
 $ stx-bulk-transfer --help [COMMAND]
 USAGE
   $ stx-bulk-transfer COMMAND
