@@ -2,7 +2,7 @@
   "name": "@stacks/send-many-stx-cli",
   "description": "A simple CLI for making a bulk STX transfer in one command.",
   "author": "Hiro PBC",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
@@ -17,14 +17,16 @@
     "start": "ts-node src/start.ts",
     "compile": "ncc build src/index.ts --no-source-map-register -e @oclif/command -e @oclif/errors",
     "build-single-file": "yarn compile && oclif-dev readme",
-    "build": "tsdx build && oclif-dev readme && oclif-dev manifest",
+    "build": "rm -rf dist && tsc -b && oclif-dev readme && oclif-dev manifest",
     "test": "tsdx test",
     "lint": "tsdx lint",
     "size": "size-limit",
     "analyze": "size-limit --why",
     "docs": "oclif-dev readme",
     "version": "yarn build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postpack": "rm -f oclif.manifest.json",
+    "prepack": "yarn build"
   },
   "bin": {
     "stx-bulk-transfer": "./bin/run"
