@@ -157,7 +157,7 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
 
     let outputEntries: Record<
       string,
-      string | number | boolean | Record<string, string | number>[]
+      string | boolean | Record<string, string>[]
     > = {};
 
     outputEntries = {
@@ -167,11 +167,11 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
         memo: r.memo || '',
       })),
       fee: tx.auth.getFee().toString(),
-      nonce: tx.auth.spendingCondition?.nonce.toNumber() || '?',
+      nonce: tx.auth.spendingCondition?.nonce.toString() || '?',
       contract: contractIdentifier,
       sender: getAddress(flags.privateKey, network),
       totalAmount: (tx.postConditions
-        .values as STXPostCondition[])[0].amount.toNumber(),
+        .values as STXPostCondition[])[0].amount.toString(),
       transactionHex: tx.serialize().toString('hex'),
     };
 
@@ -187,7 +187,11 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
             network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
           }`;
         } else {
-          console.log(result.toString());
+          if (flags.jsonOutput) {
+            console.log(JSON.stringify({ transactionId: result.toString() }));
+          } else {
+            console.log(result.toString());
+          }
         }
       } else {
         broadcastFailed = true;
@@ -195,7 +199,13 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
         outputEntries['error'] = JSON.stringify(result, null, 2);
       }
     } else if (flags.quiet) {
-      console.log(tx.serialize().toString('hex'));
+      if (flags.jsonOutput) {
+        console.log(
+          JSON.stringify({ transactionHex: tx.serialize().toString('hex') })
+        );
+      } else {
+        console.log(tx.serialize().toString('hex'));
+      }
     }
 
     if (verbose) {
