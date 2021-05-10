@@ -135,6 +135,9 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
       network.coreApiUrl = flags.nodeUrl;
     }
 
+    if (network instanceof StacksMocknet && !flags.contractAddress) {
+      throw new Error('Must manually specify contract address for mocknet');
+    }
     const contractIdentifier =
       flags.contractAddress || this.getContract(network);
 

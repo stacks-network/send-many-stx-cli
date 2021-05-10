@@ -6,25 +6,37 @@ import {
   ChainID,
   makeContractDeploy,
 } from '@stacks/transactions';
+import { promises as fs } from 'fs';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
+type Contract = 'send-many' | 'send-many-memo' | 'memo-expected';
 
-export class SetMemoExpected extends Command {
-  static description = `Set memo-expected on a principal.
-  This deploys an empty contract called 'memo-expected' on the address of the provided private key.
+function isValidContract(input: string): input is Contract {
+  return (
+    input === 'send-many' ||
+    input === 'send-many-memo' ||
+    input === 'memo-expected'
+  );
+}
 
-  It is respected by the send-many-memo command. If a contract called 'memo-expected' is deployed
-  on a principal, and no memo is passed, the send-many will be aborted before it ever reaches the
-  chain.
+export class DeployContract extends Command {
+  static description = `Deploy \`send-many\`, \`send-many-memo\`, \`memo-expected\`.
+  A utility to simplify deploying contracts related to the STX bulk transfer tool. It deploys
+  the contract on the address of the provided private key.
+
+  Valid choices are: send-many, send-many-memo, and memo-expected.
+
+  The memo-expected contract is an empty contract that is checked by the \`send-many-memo-safe\`
+  command. If a contract called 'memo-expected' is deployed on a principal, and no memo is passed,
+  the send-many will be aborted before it reaches the chain.
 
   Example usage:
 
   \`\`\`
-  npx stx-bulk-transfer set-memo-expected -k my_private_key -n testnet -b
+  npx stx-bulk-transfer deploy-contract memo-expected -k my_private_key -n testnet -b
   \`\`\`
   `;
-  // allow infinite arguments
-  static strict = false;
+  static strict = true;
 
   static flags = {
     help: flags.help({ char: 'h' }),
@@ -60,20 +72,21 @@ only the transaction ID will be logged. If the quiet flagged is passed without b
 only the raw transaction hex will be logged.
 `,
     }),
-    contractAddress: flags.string({
-      char: 'c',
-      description:
-        'Manually specify the contract address for send-many. If omitted, default contracts will be used.',
-    }),
     nonce: flags.integer({
       description: 'Optionally specify a nonce for this transaction',
     }),
   };
 
-  static args = [];
+  static args = [
+    {
+      name: 'contract',
+      description: `The contract to deploy`,
+    },
+  ];
 
   getNetwork() {
-    const { flags } = this.parse(SetMemoExpected);
+    const { flags } = this.parse(DeployContract);
+
     const networks = {
       mainnet: StacksMainnet,
       testnet: StacksTestnet,
@@ -83,8 +96,21 @@ only the raw transaction hex will be logged.
     return networks[flags.network as NetworkString];
   }
 
+  async getContractCode(contract: Contract) {
+    if (contract === 'memo-expected') return '(print "ok")';
+    return await fs.readFile(`./contracts/${contract}.clar`, 'utf8');
+  }
+
   async run() {
-    const { flags } = this.parse(SetMemoExpected);
+    const { argv, flags } = this.parse(DeployContract);
+    const [contract] = argv;
+
+    if (!contract) {
+      throw new Error('No contract specified, try --help');
+    }
+    if (!isValidContract(contract)) {
+      throw new Error(`Invalid contract ${contract}`);
+    }
 
     const networkClass = this.getNetwork();
     if (!networkClass) {
@@ -96,8 +122,8 @@ only the raw transaction hex will be logged.
     }
 
     const tx = await makeContractDeploy({
-      contractName: 'memo-expected',
-      codeBody: '(print "ok")',
+      contractName: contract,
+      codeBody: await this.getContractCode(contract),
       senderKey: flags.privateKey,
       network,
     });
@@ -110,7 +136,7 @@ only the raw transaction hex will be logged.
       this.log('Nonce:', tx.auth.spendingCondition?.nonce.toNumber());
       this.log(
         'Contract address:',
-        `${getAddress(flags.privateKey, network)}.memo-expected`
+        `${getAddress(flags.privateKey, network)}.${contract}`
       );
       this.log('Sender:', getAddress(flags.privateKey, network));
     }
@@ -132,8 +158,12 @@ only the raw transaction hex will be logged.
           console.log(result.toString());
         }
       } else {
-        this.log('Transaction rejected:', result);
-        process.exit(1);
+        if (result.reason === 'ContractAlreadyExists') {
+          this.log('Contract already deployed.');
+        } else {
+          this.log('Transaction rejected:', result);
+          process.exit(1);
+        }
       }
     } else if (flags.quiet) {
       console.log(tx.serialize().toString('hex'));

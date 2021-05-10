@@ -12,6 +12,7 @@ import {
   validateStacksAddress,
 } from '@stacks/transactions';
 import { STXPostCondition } from '@stacks/transactions/dist/transactions/src/postcondition';
+import fetch, { Response } from 'node-fetch';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 
@@ -20,9 +21,39 @@ const DEFAULT_TESTNET_CONTRACT =
 const DEFAULT_MAINNET_CONTRACT =
   'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many-memo';
 
-export class SendManyMemo extends Command {
-  static description = `Execute a bulk STX transfer, with memos attached.
+function uniqueFetchSession() {
+  return (() => {
+    let register: { [key: string]: Promise<Response> } = {};
+    return (url: string) => register[url] || (register[url] = fetch(url));
+  })();
+}
+
+async function checkMemoExpected(
+  network: StacksNetwork,
+  recipients: Recipient[]
+): Promise<string[]> {
+  const fetch = uniqueFetchSession();
+  const results = await Promise.all(
+    recipients
+      .filter(recipient => recipient.memo?.length === 0)
+      .map(recipient =>
+        fetch(
+          network.getAbiApiUrl(recipient.address, 'memo-expected')
+        ).then(response => ({ response, recipient }))
+      )
+  );
+  return results
+    .filter(entry => entry.response.status === 200)
+    .map(entry => entry.recipient.address);
+}
+
+export class SendManyMemoSafe extends Command {
+  static description = `Execute a bulk STX transfer, with memos attached, checking if the transfer is safe to send.
   The bulk transfer is executed in a single transaction by invoking a \`contract-call\` on the "send-many-memo" contract.
+
+  The 'safe' counterpart of send-many-memo checks for the existence of a \`memo-expected\` contract for each recipient.
+  If it exists, the transfer will be aborted if the corresponding memo is empty or missing. A utility command to deploy
+  this contract is part of this tool: stx-bulk-transfer deploy-contract memo-expected.
 
   The default contracts can be found below:
 
@@ -32,7 +63,7 @@ export class SendManyMemo extends Command {
   Example usage:
 
   \`\`\`
-  npx stx-bulk-transfer send-many-memo STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,hello ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50,memo2 -k my_private_key -n testnet -b
+  npx stx-bulk-transfer send-many-memo-safe STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,hello ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50,memo2 -k my_private_key -n testnet -b
   \`\`\`
   `;
   // allow infinite arguments
@@ -93,7 +124,7 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
   ];
 
   getNetwork() {
-    const { flags } = this.parse(SendManyMemo);
+    const { flags } = this.parse(SendManyMemoSafe);
     const networks = {
       mainnet: StacksMainnet,
       testnet: StacksTestnet,
@@ -110,7 +141,7 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
   }
 
   async run() {
-    const { argv, flags } = this.parse(SendManyMemo);
+    const { argv, flags } = this.parse(SendManyMemoSafe);
 
     const recipients: Recipient[] = argv.map(arg => {
       const [address, amount, memo] = arg.split(',');
@@ -134,6 +165,15 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
     const network = new networkClass();
     if (flags.nodeUrl) {
       network.coreApiUrl = flags.nodeUrl;
+    }
+
+    const memoExpectedRecipients = await checkMemoExpected(network, recipients);
+    if (memoExpectedRecipients.length) {
+      throw new Error(
+        `Memo expected for: ${memoExpectedRecipients
+          .filter((value, index, self) => self.indexOf(value) === index)
+          .join(', ')}`
+      );
     }
 
     if (network instanceof StacksMocknet && !flags.contractAddress) {
