@@ -72,6 +72,11 @@ only the transaction ID will be logged. If the quiet flagged is passed without b
 only the raw transaction hex will be logged.
 `,
     }),
+    jsonOutput: flags.boolean({
+      char: 'j',
+      default: false,
+      description: 'Output data in JSON format',
+    }),
     contractAddress: flags.string({
       char: 'c',
       description:
@@ -153,45 +158,81 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
 
     const verbose = !flags.quiet;
 
-    if (verbose) {
-      this.log('Recipients:');
-      recipients.forEach(r => {
-        this.log(`Address: ${r.address}`);
-        this.log(`Amount: ${r.amount}`);
-        this.log(`Memo: ${r.memo || ''}`);
-        this.log('----------');
-      });
-      this.log('Fee:', tx.auth.getFee().toString());
-      this.log('Nonce:', tx.auth.spendingCondition?.nonce.toNumber());
-      this.log('Contract:', contractIdentifier);
-      this.log('Sender:', getAddress(flags.privateKey, network));
-      const [postCondition] = tx.postConditions.values as STXPostCondition[];
-      this.log('Total amount:', postCondition.amount.toNumber());
-      this.log('Transaction hex:', tx.serialize().toString('hex'));
-    }
+    let outputEntries: Record<
+      string,
+      string | boolean | Record<string, string>[]
+    > = {};
 
+    outputEntries = {
+      recipients: recipients.map(r => ({
+        address: r.address,
+        amount: r.amount,
+        memo: r.memo || '',
+      })),
+      fee: tx.auth.getFee().toString(),
+      nonce: tx.auth.spendingCondition?.nonce.toString() || '?',
+      contract: contractIdentifier,
+      sender: getAddress(flags.privateKey, network),
+      totalAmount: (tx.postConditions
+        .values as STXPostCondition[])[0].amount.toString(),
+      transactionHex: tx.serialize().toString('hex'),
+    };
+
+    let broadcastFailed = false;
     if (flags.broadcast) {
       const result = await broadcastTransaction(tx, network);
       if (typeof result === 'string') {
         if (verbose) {
-          this.log('Transaction ID:', result);
+          outputEntries['success'] = true;
+          outputEntries['transactionId'] = result;
           const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
-          !(network instanceof StacksMocknet) &&
-            this.log(
-              'View in explorer:',
-              `${explorerLink}?chain=${
-                network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
-              }`
-            );
+          outputEntries['explorerLink'] = `${explorerLink}?chain=${
+            network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
+          }`;
         } else {
-          console.log(result.toString());
+          if (flags.jsonOutput) {
+            console.log(JSON.stringify({ transactionId: result.toString() }));
+          } else {
+            console.log(result.toString());
+          }
         }
       } else {
-        this.log('Transaction rejected:', result);
-        process.exit(1);
+        broadcastFailed = true;
+        outputEntries['success'] = false;
+        outputEntries['error'] = JSON.stringify(result, null, 2);
       }
     } else if (flags.quiet) {
-      console.log(tx.serialize().toString('hex'));
+      if (flags.jsonOutput) {
+        console.log(
+          JSON.stringify({ transactionHex: tx.serialize().toString('hex') })
+        );
+      } else {
+        console.log(tx.serialize().toString('hex'));
+      }
+    }
+
+    if (verbose) {
+      if (flags.jsonOutput) {
+        this.log(JSON.stringify(outputEntries, null, 2));
+      } else {
+        for (const [key, value] of Object.entries(outputEntries)) {
+          if (Array.isArray(value)) {
+            this.log(`${key}:`);
+            value.forEach(obj => {
+              Object.entries(obj).forEach(([k, v]) => {
+                this.log(`  ${k}: ${v}`);
+              });
+              this.log('  ----------');
+            });
+          } else {
+            this.log(`${key}: ${value}`);
+          }
+        }
+      }
+    }
+
+    if (broadcastFailed) {
+      process.exit(1);
     }
   }
 }
