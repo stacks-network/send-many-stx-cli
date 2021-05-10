@@ -1,38 +1,26 @@
 import { Command, flags } from '@oclif/command';
-import { sendMany, Recipient, isNormalInteger, getAddress } from '../builder';
-import {
-  StacksMocknet,
-  StacksMainnet,
-  StacksTestnet,
-  StacksNetwork,
-} from '@stacks/network';
+import { getAddress } from '../builder';
+import { StacksMocknet, StacksMainnet, StacksTestnet } from '@stacks/network';
 import {
   broadcastTransaction,
   ChainID,
-  validateStacksAddress,
+  makeContractDeploy,
 } from '@stacks/transactions';
-import { STXPostCondition } from '@stacks/transactions/dist/transactions/src/postcondition';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 
-const DEFAULT_TESTNET_CONTRACT =
-  'STR8P3RD1EHA8AA37ERSSSZSWKS9T2GYQFGXNA4C.send-many';
-const DEFAULT_MAINNET_CONTRACT =
-  'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many';
+export class SetMemoExpected extends Command {
+  static description = `Set memo-expected on a principal.
+  This deploys an empty contract called 'memo-expected' on the address of the provided private key.
 
-export class SendMany extends Command {
-  static description = `Execute a bulk STX transfer.
-  The bulk transfer is executed in a single transaction by invoking a \`contract-call\` on the "send-many" contract.
-
-  The default contracts can be found below:
-
-  Testnet: https://explorer.stacks.co/txid/${DEFAULT_TESTNET_CONTRACT}?chain=testnet
-  Mainnet: https://explorer.stacks.co/txid/${DEFAULT_MAINNET_CONTRACT}?chain=mainnet
+  It is respected by the send-many-memo command. If a contract called 'memo-expected' is deployed
+  on a principal, and no memo is passed, the send-many will be aborted before it ever reaches the
+  chain.
 
   Example usage:
 
   \`\`\`
-  npx stx-bulk-transfer send-many STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50 -k my_private_key -n testnet -b
+  npx stx-bulk-transfer set-memo-expected -k my_private_key -n testnet -b
   \`\`\`
   `;
   // allow infinite arguments
@@ -82,18 +70,10 @@ only the raw transaction hex will be logged.
     }),
   };
 
-  static args = [
-    {
-      name: 'recipients',
-      description: `
-A set of recipients in the format of "address,amount_ustx"
-Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50
-      `,
-    },
-  ];
+  static args = [];
 
   getNetwork() {
-    const { flags } = this.parse(SendMany);
+    const { flags } = this.parse(SetMemoExpected);
     const networks = {
       mainnet: StacksMainnet,
       testnet: StacksTestnet,
@@ -103,28 +83,8 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
     return networks[flags.network as NetworkString];
   }
 
-  getContract(network: StacksNetwork) {
-    return network.chainId === ChainID.Testnet
-      ? DEFAULT_TESTNET_CONTRACT
-      : DEFAULT_MAINNET_CONTRACT;
-  }
-
   async run() {
-    const { argv, flags } = this.parse(SendMany);
-
-    const recipients: Recipient[] = argv.map(arg => {
-      const [address, amount] = arg.split(',');
-      if (!validateStacksAddress(address)) {
-        throw new Error(`${address} is not a valid STX address`);
-      }
-      if (!isNormalInteger(amount)) {
-        throw new Error(`${amount} is not a valid integer.`);
-      }
-      return {
-        address,
-        amount,
-      };
-    });
+    const { flags } = this.parse(SetMemoExpected);
 
     const networkClass = this.getNetwork();
     if (!networkClass) {
@@ -135,15 +95,11 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
       network.coreApiUrl = flags.nodeUrl;
     }
 
-    const contractIdentifier =
-      flags.contractAddress || this.getContract(network);
-
-    const tx = await sendMany({
-      recipients,
-      network,
+    const tx = await makeContractDeploy({
+      contractName: 'memo-expected',
+      codeBody: '(print "ok")',
       senderKey: flags.privateKey,
-      contractIdentifier,
-      nonce: flags.nonce,
+      network,
     });
 
     const verbose = !flags.quiet;
@@ -152,10 +108,11 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
       this.log('Transaction hex:', tx.serialize().toString('hex'));
       this.log('Fee:', tx.auth.getFee().toString());
       this.log('Nonce:', tx.auth.spendingCondition?.nonce.toNumber());
-      this.log('Contract:', contractIdentifier);
+      this.log(
+        'Contract address:',
+        `${getAddress(flags.privateKey, network)}.memo-expected`
+      );
       this.log('Sender:', getAddress(flags.privateKey, network));
-      const [postCondition] = tx.postConditions.values as STXPostCondition[];
-      this.log('Total amount:', postCondition.amount.toNumber());
     }
 
     if (flags.broadcast) {
@@ -164,12 +121,13 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
         if (verbose) {
           this.log('Transaction ID:', result);
           const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
-          this.log(
-            'View in explorer:',
-            `${explorerLink}?chain=${
-              network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
-            }`
-          );
+          !(network instanceof StacksMocknet) &&
+            this.log(
+              'View in explorer:',
+              `${explorerLink}?chain=${
+                network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
+              }`
+            );
         } else {
           console.log(result.toString());
         }

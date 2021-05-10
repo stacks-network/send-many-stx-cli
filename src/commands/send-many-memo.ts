@@ -9,9 +9,12 @@ import {
 import {
   broadcastTransaction,
   ChainID,
+  makeContractDeploy,
   validateStacksAddress,
 } from '@stacks/transactions';
 import { STXPostCondition } from '@stacks/transactions/dist/transactions/src/postcondition';
+import fetch from 'node-fetch';
+import { promises as fs } from 'fs';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 
@@ -19,6 +22,24 @@ const DEFAULT_TESTNET_CONTRACT =
   'STR8P3RD1EHA8AA37ERSSSZSWKS9T2GYQFGXNA4C.send-many-memo';
 const DEFAULT_MAINNET_CONTRACT =
   'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many-memo';
+
+async function checkMemoExpected(
+  network: StacksNetwork,
+  recipients: Recipient[]
+): Promise<string[]> {
+  const results = await Promise.all(
+    recipients
+      .filter(recipient => recipient.memo?.length === 0)
+      .map(recipient =>
+        fetch(
+          network.getAbiApiUrl(recipient.address, 'memo-expected')
+        ).then(response => ({ response, recipient }))
+      )
+  );
+  return results
+    .filter(entry => entry.response.status === 200)
+    .map(entry => entry.recipient.address);
+}
 
 export class SendManyMemo extends Command {
   static description = `Execute a bulk STX transfer, with memos attached.
@@ -62,6 +83,13 @@ export class SendManyMemo extends Command {
       char: 'u',
       description:
         'A default node URL will be used based on the `network` option. Use this flag to manually override.',
+    }),
+    checkMemoExpected: flags.boolean({
+      required: false,
+      char: 'm',
+      default: true,
+      description:
+        'Check if memos are expected for each recipient. Defaults to true.',
     }),
     quiet: flags.boolean({
       char: 'q',
@@ -109,6 +137,21 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
       : DEFAULT_TESTNET_CONTRACT;
   }
 
+  async deployContract(network: StacksNetwork, privateKey: string) {
+    const tx = await makeContractDeploy({
+      contractName: 'send-many-memo',
+      codeBody: await fs.readFile('./contracts/send-many-memo.clar', 'utf8'),
+      senderKey: privateKey,
+      network,
+    });
+    const result = await broadcastTransaction(tx, network);
+    if (typeof result !== 'string' && result.reason !== 'ContractAlreadyExists')
+      throw new Error(
+        `Could not deploy send-many-memo on mocknet. Reason: ${result.reason}`
+      );
+    return `${getAddress(privateKey, network)}.send-many-memo`;
+  }
+
   async run() {
     const { argv, flags } = this.parse(SendManyMemo);
 
@@ -136,7 +179,17 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
       network.coreApiUrl = flags.nodeUrl;
     }
 
-    const contractIdentifier = this.getContract(network);
+    if (flags.checkMemoExpected) {
+      const expected = await checkMemoExpected(network, recipients);
+      if (expected.length) {
+        throw new Error(`Memo expected for: ${expected.join(', ')}`);
+      }
+    }
+
+    const contractIdentifier =
+      flags.contractAddress || network instanceof StacksMocknet
+        ? await this.deployContract(network, flags.privateKey)
+        : this.getContract(network);
 
     const tx = await sendMany({
       recipients,
@@ -172,12 +225,13 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
         if (verbose) {
           this.log('Transaction ID:', result);
           const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
-          this.log(
-            'View in explorer:',
-            `${explorerLink}?chain=${
-              network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
-            }`
-          );
+          !(network instanceof StacksMocknet) &&
+            this.log(
+              'View in explorer:',
+              `${explorerLink}?chain=${
+                network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
+              }`
+            );
         } else {
           console.log(result.toString());
         }
