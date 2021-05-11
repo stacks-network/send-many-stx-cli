@@ -185,10 +185,12 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
         if (verbose) {
           outputEntries['success'] = true;
           outputEntries['transactionId'] = result;
-          const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
-          outputEntries['explorerLink'] = `${explorerLink}?chain=${
-            network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
-          }`;
+          if (!(network instanceof StacksMocknet)) {
+            const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
+            outputEntries['explorerLink'] = `${explorerLink}?chain=${
+              network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
+            }`;
+          }
         } else {
           if (flags.jsonOutput) {
             console.log(JSON.stringify({ transactionId: result.toString() }));
