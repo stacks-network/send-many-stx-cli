@@ -173,7 +173,7 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
     }
 
     const memoExpectedRecipients = await checkMemoExpected(network, recipients);
-    if (memoExpectedRecipients.length) {
+    if (memoExpectedRecipients.length > 0) {
       if (flags.jsonOutput) {
         console.log(JSON.stringify({ success: false, memoExpectedRecipients }));
         process.exit(1);
