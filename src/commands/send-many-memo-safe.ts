@@ -35,7 +35,7 @@ async function checkMemoExpected(
   const fetch = uniqueFetchSession();
   const results = await Promise.all(
     recipients
-      .filter(recipient => recipient.memo?.length === 0)
+      .filter(recipient => !recipient.memo)
       .map(recipient =>
         fetch(
           network.getAbiApiUrl(recipient.address, 'memo-expected')
