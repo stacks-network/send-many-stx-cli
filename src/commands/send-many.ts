@@ -135,7 +135,11 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
       network.coreApiUrl = flags.nodeUrl;
     }
 
-    const contractIdentifier = this.getContract(network);
+    if (network instanceof StacksMocknet && !flags.contractAddress) {
+      throw new Error('Must manually specify contract address for mocknet');
+    }
+    const contractIdentifier =
+      flags.contractAddress || this.getContract(network);
 
     const tx = await sendMany({
       recipients,
@@ -162,13 +166,15 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
       if (typeof result === 'string') {
         if (verbose) {
           this.log('Transaction ID:', result);
-          const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
-          this.log(
-            'View in explorer:',
-            `${explorerLink}?chain=${
-              network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
-            }`
-          );
+          if (!(network instanceof StacksMocknet)) {
+            const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
+            this.log(
+              'View in explorer:',
+              `${explorerLink}?chain=${
+                network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
+              }`
+            );
+          }
         } else {
           console.log(result.toString());
         }
