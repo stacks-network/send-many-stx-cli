@@ -18,7 +18,7 @@ $ npm install -g @stacks/send-many-stx-cli
 $ stx-bulk-transfer COMMAND
 running command...
 $ stx-bulk-transfer (-v|--version|version)
-@stacks/send-many-stx-cli/1.2.0 darwin-x64 node-v14.16.1
+@stacks/send-many-stx-cli/1.3.0 darwin-x64 node-v14.17.5
 $ stx-bulk-transfer --help [COMMAND]
 USAGE
   $ stx-bulk-transfer COMMAND
@@ -106,6 +106,11 @@ OPTIONS
 
   -k, --privateKey=privateKey            (required) Your private key
 
+  -m, --feeMultiplier=feeMultiplier      Optionally specify a fee multiplier. If passed, the tx fee will be (estimated
+                                         fee + (estimated fee * multiplier)).
+                                         For example, a fee multiplier of 15 for a tx with an estimated fee of 200 would
+                                         result in a tx with the fee of 230.
+
   -n, --network=mocknet|testnet|mainnet  [default: testnet] Which network to broadcast this to
 
   -q, --quiet                            Reduce logging from this command. If this flag is passed with the broadcast
@@ -160,6 +165,11 @@ OPTIONS
 
   -k, --privateKey=privateKey            (required) Your private key
 
+  -m, --feeMultiplier=feeMultiplier      Optionally specify a fee multiplier. If passed, the tx fee will be (estimated
+                                         fee + (estimated fee * multiplier)).
+                                         For example, a fee multiplier of 15 for a tx with an estimated fee of 200 would
+                                         result in a tx with the fee of 230.
+
   -n, --network=mocknet|testnet|mainnet  [default: testnet] Which network to broadcast this to
 
   -q, --quiet                            Reduce logging from this command. If this flag is passed with the broadcast
@@ -213,6 +223,11 @@ OPTIONS
   -j, --jsonOutput                       Output data in JSON format
 
   -k, --privateKey=privateKey            (required) Your private key
+
+  -m, --feeMultiplier=feeMultiplier      Optionally specify a fee multiplier. If passed, the tx fee will be (estimated
+                                         fee + (estimated fee * multiplier)).
+                                         For example, a fee multiplier of 15 for a tx with an estimated fee of 200 would
+                                         result in a tx with the fee of 230.
 
   -n, --network=mocknet|testnet|mainnet  [default: testnet] Which network to broadcast this to
 
