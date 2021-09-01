@@ -16,7 +16,7 @@ import { STXPostCondition } from '@stacks/transactions/dist/transactions/src/pos
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 
 const DEFAULT_TESTNET_CONTRACT =
-  'STR8P3RD1EHA8AA37ERSSSZSWKS9T2GYQFGXNA4C.send-many';
+  'ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B.send-many';
 const DEFAULT_MAINNET_CONTRACT =
   'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many';
 

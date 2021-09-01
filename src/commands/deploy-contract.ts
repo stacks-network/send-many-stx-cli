@@ -4,9 +4,11 @@ import { StacksMocknet, StacksMainnet, StacksTestnet } from '@stacks/network';
 import {
   broadcastTransaction,
   ChainID,
+  ContractDeployOptions,
   makeContractDeploy,
 } from '@stacks/transactions';
 import { promises as fs } from 'fs';
+import BN from 'bn.js';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 type Contract = 'send-many' | 'send-many-memo' | 'memo-expected';
@@ -121,12 +123,16 @@ only the raw transaction hex will be logged.
       network.coreApiUrl = flags.nodeUrl;
     }
 
-    const tx = await makeContractDeploy({
+    const txOptions: ContractDeployOptions = {
       contractName: contract,
       codeBody: await this.getContractCode(contract),
       senderKey: flags.privateKey,
       network,
-    });
+    };
+    if (flags.nonce !== undefined) {
+      txOptions.nonce = new BN(flags.nonce);
+    }
+    const tx = await makeContractDeploy(txOptions);
 
     const verbose = !flags.quiet;
 
