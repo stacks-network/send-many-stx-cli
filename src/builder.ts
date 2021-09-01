@@ -15,6 +15,7 @@ import {
   UIntCV,
   BufferCV,
   bufferCVFromString,
+  estimateContractFunctionCall,
 } from '@stacks/transactions';
 import { StacksNetwork } from '@stacks/network';
 import BN from 'bn.js';
@@ -37,6 +38,7 @@ interface SendOptions {
   senderKey: string;
   contractIdentifier: string;
   nonce?: number;
+  feeMultiplier?: number;
   withMemo?: boolean;
 }
 
@@ -53,6 +55,7 @@ export async function sendMany({
   senderKey,
   contractIdentifier,
   nonce,
+  feeMultiplier,
   withMemo,
 }: SendOptions) {
   const [contractAddress, contractName] = contractIdentifier.split('.');
@@ -92,6 +95,18 @@ export async function sendMany({
   };
 
   if (nonce !== undefined) options.nonce = new BN(nonce, 10);
+
+  if (feeMultiplier !== undefined) {
+    const templateTx = await makeContractCall(options);
+    const estimatedFee = await estimateContractFunctionCall(
+      templateTx,
+      network
+    );
+    const feeBump = (estimatedFee as BN)
+      .muln(feeMultiplier)
+      .divRound(new BN(100));
+    options.fee = (estimatedFee as BN).add(feeBump);
+  }
 
   const tx = await makeContractCall(options);
 

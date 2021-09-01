@@ -85,6 +85,14 @@ only the raw transaction hex will be logged.
     nonce: flags.integer({
       description: 'Optionally specify a nonce for this transaction',
     }),
+    feeMultiplier: flags.integer({
+      required: false,
+      char: 'm',
+      description: `
+Optionally specify a fee multiplier. If passed, the tx fee will be (estimated fee + (estimated fee * multiplier)).
+For example, a fee multiplier of 15 for a tx with an estimated fee of 200 would result in a tx with the fee of 230.
+`,
+    }),
   };
 
   static args = [
@@ -153,6 +161,7 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
       senderKey: flags.privateKey,
       contractIdentifier,
       nonce: flags.nonce,
+      feeMultiplier: flags.feeMultiplier,
       withMemo: true,
     });
 
