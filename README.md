@@ -18,7 +18,7 @@ $ npm install -g @stacks/send-many-stx-cli
 $ stx-bulk-transfer COMMAND
 running command...
 $ stx-bulk-transfer (-v|--version|version)
-@stacks/send-many-stx-cli/1.3.0 darwin-x64 node-v14.17.5
+@stacks/send-many-stx-cli/1.4.0 darwin-x64 node-v16.11.1
 $ stx-bulk-transfer --help [COMMAND]
 USAGE
   $ stx-bulk-transfer COMMAND
@@ -83,6 +83,8 @@ DESCRIPTION
      ```
 ```
 
+_See code: [dist/commands/deploy-contract.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/deploy-contract.ts)_
+
 ## `stx-bulk-transfer send-many [RECIPIENTS]`
 
 Execute a bulk STX transfer.
@@ -96,6 +98,10 @@ ARGUMENTS
               Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50
 
 OPTIONS
+  -a, --allowSingleStxTransfer           If enabled and only a single recipient is specified, a STX-transfer transaction
+                                         type will be used rather than a contract-call transaction.
+                                         If omitted, a contract-call will always be used, which can be less efficient.
+
   -b, --broadcast                        Whether to broadcast this transaction. Omitting this flag will not broadcast
                                          the transaction.
 
@@ -140,6 +146,8 @@ DESCRIPTION
      ```
 ```
 
+_See code: [dist/commands/send-many.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/send-many.ts)_
+
 ## `stx-bulk-transfer send-many-memo [RECIPIENTS]`
 
 Execute a bulk STX transfer, with memos attached.
@@ -153,6 +161,10 @@ ARGUMENTS
               Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50
 
 OPTIONS
+  -a, --allowSingleStxTransfer           If enabled and only a single recipient is specified, a STX-transfer transaction
+                                         type will be used rather than a contract-call transaction.
+                                         If omitted, a contract-call will always be used, which can be less efficient.
+
   -b, --broadcast                        Whether to broadcast this transaction. Omitting this flag will not broadcast
                                          the transaction.
 
@@ -199,6 +211,8 @@ DESCRIPTION
      ```
 ```
 
+_See code: [dist/commands/send-many-memo.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/send-many-memo.ts)_
+
 ## `stx-bulk-transfer send-many-memo-safe [RECIPIENTS]`
 
 Execute a bulk STX transfer, with memos attached, checking if the transfer is safe to send.
@@ -212,6 +226,10 @@ ARGUMENTS
               Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50
 
 OPTIONS
+  -a, --allowSingleStxTransfer           If enabled and only a single recipient is specified, a STX-transfer transaction
+                                         type will be used rather than a contract-call transaction.
+                                         If omitted, a contract-call will always be used, which can be less efficient.
+
   -b, --broadcast                        Whether to broadcast this transaction. Omitting this flag will not broadcast
                                          the transaction.
 
@@ -262,6 +280,8 @@ DESCRIPTION
   ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50,memo2 -k my_private_key -n testnet -b
      ```
 ```
+
+_See code: [dist/commands/send-many-memo-safe.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/send-many-memo-safe.ts)_
 <!-- commandsstop -->
 
 ## Development
