@@ -1,5 +1,11 @@
 import { Command, flags } from '@oclif/command';
-import { sendMany, Recipient, isNormalInteger, getAddress } from '../builder';
+import {
+  sendMany,
+  Recipient,
+  isNormalInteger,
+  getAddress,
+  sendStxTransfer,
+} from '../builder';
 import {
   StacksMocknet,
   StacksMainnet,
@@ -9,6 +15,7 @@ import {
 import {
   broadcastTransaction,
   ChainID,
+  StacksTransaction,
   validateStacksAddress,
 } from '@stacks/transactions';
 import { STXPostCondition } from '@stacks/transactions/dist/transactions/src/postcondition';
@@ -88,6 +95,15 @@ Optionally specify a fee multiplier. If passed, the tx fee will be (estimated fe
 For example, a fee multiplier of 15 for a tx with an estimated fee of 200 would result in a tx with the fee of 230.
 `,
     }),
+    allowSingleStxTransfer: flags.boolean({
+      required: false,
+      char: 'a',
+      default: false,
+      description: `
+If enabled and only a single recipient is specified, a STX-transfer transaction type will be used rather than a contract-call transaction. 
+If omitted, a contract-call will always be used, which can be less efficient.
+`,
+    }),
   };
 
   static args = [
@@ -149,14 +165,27 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
     const contractIdentifier =
       flags.contractAddress || this.getContract(network);
 
-    const tx = await sendMany({
-      recipients,
-      network,
-      senderKey: flags.privateKey,
-      contractIdentifier,
-      nonce: flags.nonce,
-      feeMultiplier: flags.feeMultiplier,
-    });
+    let tx: StacksTransaction;
+    const performStxTransferTx: boolean =
+      recipients.length === 1 && flags.allowSingleStxTransfer;
+    if (performStxTransferTx) {
+      tx = await sendStxTransfer({
+        recipient: recipients[0],
+        network,
+        senderKey: flags.privateKey,
+        nonce: flags.nonce,
+        feeMultiplier: flags.feeMultiplier,
+      });
+    } else {
+      tx = await sendMany({
+        recipients,
+        network,
+        senderKey: flags.privateKey,
+        contractIdentifier,
+        nonce: flags.nonce,
+        feeMultiplier: flags.feeMultiplier,
+      });
+    }
 
     const verbose = !flags.quiet;
 
@@ -168,6 +197,9 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
       this.log('Sender:', getAddress(flags.privateKey, network));
       const [postCondition] = tx.postConditions.values as STXPostCondition[];
       this.log('Total amount:', postCondition.amount.toNumber());
+      if (flags.allowSingleStxTransfer) {
+        this.log('Is STX-transfer transaction type: ', performStxTransferTx);
+      }
     }
 
     if (flags.broadcast) {
