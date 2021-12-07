@@ -69,6 +69,7 @@ export class ValidateAddress extends Command {
 			}
 			else {
 				this.log('0');
+				process.exitCode = 1; // Exit code 1 means valid address but incorrect network version.
 				if (flags.verbose) {
 					this.log(`Valid address but incorrect network version (address version: ${version}, expected: ${networkVersion.p2pkh} or ${networkVersion.p2sh})`);
 				}
@@ -76,6 +77,7 @@ export class ValidateAddress extends Command {
 		}
 		catch (error) {
 			this.log('0');
+			process.exitCode = 2; // Exit code 2 means malformed STX address.
 			if (flags.verbose) {
 				this.log(error as any);
 			}
