@@ -18,7 +18,7 @@ $ npm install -g @stacks/send-many-stx-cli
 $ stx-bulk-transfer COMMAND
 running command...
 $ stx-bulk-transfer (-v|--version|version)
-@stacks/send-many-stx-cli/1.4.0 darwin-x64 node-v16.11.1
+@stacks/send-many-stx-cli/1.4.0 darwin-arm64 node-v15.14.0
 $ stx-bulk-transfer --help [COMMAND]
 USAGE
   $ stx-bulk-transfer COMMAND
@@ -33,6 +33,7 @@ USAGE
 * [`stx-bulk-transfer send-many [RECIPIENTS]`](#stx-bulk-transfer-send-many-recipients)
 * [`stx-bulk-transfer send-many-memo [RECIPIENTS]`](#stx-bulk-transfer-send-many-memo-recipients)
 * [`stx-bulk-transfer send-many-memo-safe [RECIPIENTS]`](#stx-bulk-transfer-send-many-memo-safe-recipients)
+* [`stx-bulk-transfer validate-address [ADDRESS]`](#stx-bulk-transfer-validate-address-address)
 
 ## `stx-bulk-transfer deploy-contract [CONTRACT]`
 
@@ -282,6 +283,32 @@ DESCRIPTION
 ```
 
 _See code: [dist/commands/send-many-memo-safe.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/send-many-memo-safe.ts)_
+
+## `stx-bulk-transfer validate-address [ADDRESS]`
+
+Validates whether the input is a valid STX address for the provided network.
+
+```
+USAGE
+  $ stx-bulk-transfer validate-address [ADDRESS]
+
+ARGUMENTS
+  ADDRESS  The address to validate
+
+OPTIONS
+  -h, --help                             show CLI help
+  -n, --network=mocknet|testnet|mainnet  [default: mainnet] Which network to check for
+  -v, --verbose                          Print error information for invalid addresses
+
+DESCRIPTION
+  Example usage:
+
+     ```
+     npx stx-bulk-transfer validate-address SP000000000000000000002Q6VF78 -n mainnet
+     ```
+```
+
+_See code: [dist/commands/validate-address.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/validate-address.ts)_
 <!-- commandsstop -->
 
 ## Development
