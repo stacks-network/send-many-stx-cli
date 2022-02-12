@@ -69,19 +69,19 @@ OPTIONS
 
 DESCRIPTION
   A utility to simplify deploying contracts related to the STX bulk transfer tool. It deploys
-     the contract on the address of the provided private key.
+    the contract on the address of the provided private key.
 
-     Valid choices are: send-many, send-many-memo, and memo-expected.
+    Valid choices are: send-many, send-many-memo, and memo-expected.
 
-     The memo-expected contract is an empty contract that is checked by the `send-many-memo-safe`
-     command. If a contract called 'memo-expected' is deployed on a principal, and no memo is passed,
-     the send-many will be aborted before it reaches the chain.
+    The memo-expected contract is an empty contract that is checked by the `send-many-memo-safe`
+    command. If a contract called 'memo-expected' is deployed on a principal, and no memo is passed,
+    the send-many will be aborted before it reaches the chain.
 
-     Example usage:
+    Example usage:
 
-     ```
-     npx stx-bulk-transfer deploy-contract memo-expected -k my_private_key -n testnet -b
-     ```
+    ```
+    npx stx-bulk-transfer deploy-contract memo-expected -k my_private_key -n testnet -b
+    ```
 ```
 
 _See code: [dist/commands/deploy-contract.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/deploy-contract.ts)_
@@ -134,17 +134,17 @@ OPTIONS
 DESCRIPTION
   The bulk transfer is executed in a single transaction by invoking a `contract-call` on the "send-many" contract.
 
-     The default contracts can be found below:
+    The default contracts can be found below:
 
-     Testnet: https://explorer.stacks.co/txid/ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B.send-many?chain=testnet
-     Mainnet: https://explorer.stacks.co/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many?chain=mainnet
+    Testnet: https://explorer.stacks.co/txid/ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B.send-many?chain=testnet
+    Mainnet: https://explorer.stacks.co/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many?chain=mainnet
 
-     Example usage:
+    Example usage:
 
-     ```
-     npx stx-bulk-transfer send-many STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 
+    ```
+    npx stx-bulk-transfer send-many STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 
   ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50 -k my_private_key -n testnet -b
-     ```
+    ```
 ```
 
 _See code: [dist/commands/send-many.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/send-many.ts)_
@@ -199,17 +199,17 @@ OPTIONS
 DESCRIPTION
   The bulk transfer is executed in a single transaction by invoking a `contract-call` on the "send-many-memo" contract.
 
-     The default contracts can be found below:
+    The default contracts can be found below:
 
-     Testnet: https://explorer.stacks.co/txid/ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B.send-many-memo?chain=testnet
-     Mainnet: https://explorer.stacks.co/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many-memo?chain=mainnet
+    Testnet: https://explorer.stacks.co/txid/ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B.send-many-memo?chain=testnet
+    Mainnet: https://explorer.stacks.co/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many-memo?chain=mainnet
 
-     Example usage:
+    Example usage:
 
-     ```
-     npx stx-bulk-transfer send-many-memo STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,hello 
+    ```
+    npx stx-bulk-transfer send-many-memo STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,hello 
   ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50,memo2 -k my_private_key -n testnet -b
-     ```
+    ```
 ```
 
 _See code: [dist/commands/send-many-memo.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/send-many-memo.ts)_
@@ -264,22 +264,22 @@ OPTIONS
 DESCRIPTION
   The bulk transfer is executed in a single transaction by invoking a `contract-call` on the "send-many-memo" contract.
 
-     The 'safe' counterpart of send-many-memo checks for the existence of a `memo-expected` contract for each recipient.
-     If it exists, the transfer will be aborted if the corresponding memo is empty or missing. A utility command to 
+    The 'safe' counterpart of send-many-memo checks for the existence of a `memo-expected` contract for each recipient.
+    If it exists, the transfer will be aborted if the corresponding memo is empty or missing. A utility command to 
   deploy
-     this contract is part of this tool: stx-bulk-transfer deploy-contract memo-expected.
+    this contract is part of this tool: stx-bulk-transfer deploy-contract memo-expected.
 
-     The default contracts can be found below:
+    The default contracts can be found below:
 
-     Testnet: https://explorer.stacks.co/txid/ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B.send-many-memo?chain=testnet
-     Mainnet: https://explorer.stacks.co/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many-memo?chain=mainnet
+    Testnet: https://explorer.stacks.co/txid/ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B.send-many-memo?chain=testnet
+    Mainnet: https://explorer.stacks.co/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many-memo?chain=mainnet
 
-     Example usage:
+    Example usage:
 
-     ```
-     npx stx-bulk-transfer send-many-memo-safe STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,hello 
+    ```
+    npx stx-bulk-transfer send-many-memo-safe STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,hello 
   ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50,memo2 -k my_private_key -n testnet -b
-     ```
+    ```
 ```
 
 _See code: [dist/commands/send-many-memo-safe.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/send-many-memo-safe.ts)_
@@ -302,10 +302,10 @@ OPTIONS
 
 DESCRIPTION
   Example usage:
-
-     ```
-     npx stx-bulk-transfer validate-address SP000000000000000000002Q6VF78 -n mainnet
-     ```
+  
+    ```
+    npx stx-bulk-transfer validate-address SP000000000000000000002Q6VF78 -n mainnet
+    ```
 ```
 
 _See code: [dist/commands/validate-address.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/validate-address.ts)_
