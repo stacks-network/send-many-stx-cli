@@ -15,10 +15,13 @@ import {
   UIntCV,
   BufferCV,
   bufferCVFromString,
-  estimateContractFunctionCall,
   SignedTokenTransferOptions,
   makeSTXTokenTransfer,
   estimateTransfer,
+  StacksTransaction,
+  AnchorMode,
+  estimateTransaction,
+  estimateContractFunctionCall,
 } from '@stacks/transactions';
 import { StacksNetwork } from '@stacks/network';
 import BN from 'bn.js';
@@ -79,6 +82,7 @@ export async function sendStxTransfer({
     recipient: standardPrincipalCV(recipient.address),
     amount: sendAmount,
     senderKey,
+    anchorMode: AnchorMode.OnChainOnly,
     postConditionMode: PostConditionMode.Deny,
     postConditions: [
       makeStandardSTXPostCondition(
@@ -97,11 +101,11 @@ export async function sendStxTransfer({
 
   if (feeMultiplier !== undefined) {
     const templateTx = await makeSTXTokenTransfer(options);
-    const estimatedFee = await estimateTransfer(templateTx, network);
-    const feeBump = (estimatedFee as BN)
+    const estimatedFee = new BN((await estimateTransfer(templateTx, network)).toString());
+    const feeBump = estimatedFee
       .muln(feeMultiplier)
       .divRound(new BN(100));
-    options.fee = (estimatedFee as BN).add(feeBump);
+    options.fee = estimatedFee.add(feeBump);
   }
 
   const tx = await makeSTXTokenTransfer(options);
@@ -143,6 +147,7 @@ export async function sendMany({
     functionName: 'send-many',
     functionArgs: [recipientListCV],
     senderKey,
+    anchorMode: AnchorMode.OnChainOnly,
     postConditionMode: PostConditionMode.Deny,
     postConditions: [
       makeStandardSTXPostCondition(
@@ -156,16 +161,15 @@ export async function sendMany({
 
   if (nonce !== undefined) options.nonce = new BN(nonce, 10);
 
+  const templateTx = await makeContractCall(options);
+  const estimatedFee = new BN((await estimateFee(templateTx, network)).fee);
+  options.fee = estimatedFee;
+
   if (feeMultiplier !== undefined) {
-    const templateTx = await makeContractCall(options);
-    const estimatedFee = await estimateContractFunctionCall(
-      templateTx,
-      network
-    );
-    const feeBump = (estimatedFee as BN)
+    const feeBump = options.fee
       .muln(feeMultiplier)
       .divRound(new BN(100));
-    options.fee = (estimatedFee as BN).add(feeBump);
+    options.fee = estimatedFee.add(feeBump);
   }
 
   const tx = await makeContractCall(options);
@@ -184,4 +188,15 @@ export function getAddress(privateKey: string, network: StacksNetwork) {
       ? TransactionVersion.Mainnet
       : TransactionVersion.Testnet;
   return getAddressFromPrivateKey(privateKey, transactionVersion);
+}
+
+export async function estimateFee(transaction: StacksTransaction, network: StacksNetwork) {
+  try {
+    const estimates = await estimateTransaction(transaction.payload, undefined, network);
+    console.log(estimates);
+    return estimates[1];
+  }
+  catch (error) {
+    return { fee: (await estimateContractFunctionCall(transaction, network)).toString() };
+  }
 }

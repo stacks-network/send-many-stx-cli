@@ -2,6 +2,7 @@ import { Command, flags } from '@oclif/command';
 import { getAddress } from '../builder';
 import { StacksMocknet, StacksMainnet, StacksTestnet } from '@stacks/network';
 import {
+  AnchorMode,
   broadcastTransaction,
   ChainID,
   ContractDeployOptions,
@@ -118,15 +119,13 @@ only the raw transaction hex will be logged.
     if (!networkClass) {
       throw new Error('Unable to get network');
     }
-    const network = new networkClass();
-    if (flags.nodeUrl) {
-      network.coreApiUrl = flags.nodeUrl;
-    }
+    const network = new networkClass(flags.nodeUrl ? { url: flags.nodeUrl } : undefined);
 
     const txOptions: ContractDeployOptions = {
       contractName: contract,
       codeBody: await this.getContractCode(contract),
       senderKey: flags.privateKey,
+      anchorMode: AnchorMode.OnChainOnly,
       network,
     };
     if (flags.nonce !== undefined) {
@@ -137,9 +136,9 @@ only the raw transaction hex will be logged.
     const verbose = !flags.quiet;
 
     if (verbose) {
+      tx.auth
       this.log('Transaction hex:', tx.serialize().toString('hex'));
-      this.log('Fee:', tx.auth.getFee().toString());
-      this.log('Nonce:', tx.auth.spendingCondition?.nonce.toNumber());
+      this.log('Nonce:', tx.auth.spendingCondition?.nonce);
       this.log(
         'Contract address:',
         `${getAddress(flags.privateKey, network)}.${contract}`
@@ -149,19 +148,18 @@ only the raw transaction hex will be logged.
 
     if (flags.broadcast) {
       const result = await broadcastTransaction(tx, network);
-      if (typeof result === 'string') {
+      if (result && result.txid) {
         if (verbose) {
-          this.log('Transaction ID:', result);
-          const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
+          this.log('Transaction ID:', result.txid);
+          const explorerLink = `https://explorer.stacks.co/txid/${result.txid}`;
           !(network instanceof StacksMocknet) &&
             this.log(
               'View in explorer:',
-              `${explorerLink}?chain=${
-                network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
+              `${explorerLink}?chain=${network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
               }`
             );
         } else {
-          console.log(result.toString());
+          console.log(result);
         }
       } else {
         if (result.reason === 'ContractAlreadyExists') {

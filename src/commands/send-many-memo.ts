@@ -16,9 +16,9 @@ import {
   broadcastTransaction,
   ChainID,
   StacksTransaction,
+  STXPostCondition,
   validateStacksAddress,
 } from '@stacks/transactions';
-import { STXPostCondition } from '@stacks/transactions/dist/transactions/src/postcondition';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 
@@ -160,10 +160,7 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
     if (!networkClass) {
       throw new Error('Unable to get network');
     }
-    const network = new networkClass();
-    if (flags.nodeUrl) {
-      network.coreApiUrl = flags.nodeUrl;
-    }
+    const network = new networkClass(flags.nodeUrl ? { url: flags.nodeUrl } : undefined);
 
     if (network instanceof StacksMocknet && !flags.contractAddress) {
       throw new Error('Must manually specify contract address for mocknet');
@@ -208,7 +205,6 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
         amount: r.amount,
         memo: r.memo || '',
       })),
-      fee: tx.auth.getFee().toString(),
       nonce: tx.auth.spendingCondition?.nonce.toString() || '?',
       contract: contractIdentifier,
       sender: getAddress(flags.privateKey, network),
@@ -224,19 +220,18 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
     let broadcastFailed = false;
     if (flags.broadcast) {
       const result = await broadcastTransaction(tx, network);
-      if (typeof result === 'string') {
+      if (result && result.txid) {
         if (verbose) {
           outputEntries['success'] = true;
-          outputEntries['transactionId'] = result;
+          outputEntries['transactionId'] = result.txid;
           if (!(network instanceof StacksMocknet)) {
-            const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
-            outputEntries['explorerLink'] = `${explorerLink}?chain=${
-              network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
-            }`;
+            const explorerLink = `https://explorer.stacks.co/txid/${result.txid}`;
+            outputEntries['explorerLink'] = `${explorerLink}?chain=${network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
+              }`;
           }
         } else {
           if (flags.jsonOutput) {
-            console.log(JSON.stringify({ transactionId: result.toString() }));
+            console.log(JSON.stringify({ transactionId: result.txid }));
           } else {
             console.log(result.toString());
           }

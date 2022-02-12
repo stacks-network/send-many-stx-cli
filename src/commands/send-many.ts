@@ -16,9 +16,9 @@ import {
   broadcastTransaction,
   ChainID,
   StacksTransaction,
+  STXPostCondition,
   validateStacksAddress,
 } from '@stacks/transactions';
-import { STXPostCondition } from '@stacks/transactions/dist/transactions/src/postcondition';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 
@@ -154,10 +154,10 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
     if (!networkClass) {
       throw new Error('Unable to get network');
     }
-    const network = new networkClass();
-    if (flags.nodeUrl) {
-      network.coreApiUrl = flags.nodeUrl;
-    }
+    const options = flags.nodeUrl ? {
+      url: flags.nodeUrl
+    } : undefined;
+    const network = new networkClass(options);
 
     if (network instanceof StacksMocknet && !flags.contractAddress) {
       throw new Error('Must manually specify contract address for mocknet');
@@ -191,12 +191,11 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
 
     if (verbose) {
       this.log('Transaction hex:', tx.serialize().toString('hex'));
-      this.log('Fee:', tx.auth.getFee().toString());
-      this.log('Nonce:', tx.auth.spendingCondition?.nonce.toNumber());
+      this.log('Nonce:', tx.auth.spendingCondition?.nonce);
       this.log('Contract:', contractIdentifier);
       this.log('Sender:', getAddress(flags.privateKey, network));
       const [postCondition] = tx.postConditions.values as STXPostCondition[];
-      this.log('Total amount:', postCondition.amount.toNumber());
+      this.log('Total amount:', postCondition.amount);
       if (flags.allowSingleStxTransfer) {
         this.log('Is STX-transfer transaction type: ', performStxTransferTx);
       }
@@ -204,20 +203,19 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
 
     if (flags.broadcast) {
       const result = await broadcastTransaction(tx, network);
-      if (typeof result === 'string') {
+      if (result && result.txid) {
         if (verbose) {
-          this.log('Transaction ID:', result);
+          this.log('Transaction ID:', result.txid);
           if (!(network instanceof StacksMocknet)) {
-            const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
+            const explorerLink = `https://explorer.stacks.co/txid/${result.txid}`;
             this.log(
               'View in explorer:',
-              `${explorerLink}?chain=${
-                network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
+              `${explorerLink}?chain=${network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
               }`
             );
           }
         } else {
-          console.log(result.toString());
+          console.log(result.txid);
         }
       } else {
         this.log('Transaction rejected:', result);
