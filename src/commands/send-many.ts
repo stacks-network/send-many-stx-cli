@@ -213,17 +213,13 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
         });
         if (verbose) {
           this.log('Transaction ID:', result);
-          if (network.magicBytes !== STACKS_MOCKNET.magicBytes) {
-            const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
-            this.log(
-              'View in explorer:',
-              `${explorerLink}?chain=${
-                network.chainId === STACKS_MAINNET.chainId
-                  ? 'mainnet'
-                  : 'testnet'
-              }`
-            );
-          }
+          const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
+          this.log(
+            'View in explorer:',
+            `${explorerLink}?chain=${
+              network.chainId === STACKS_MAINNET.chainId ? 'mainnet' : 'testnet'
+            }`
+          );
         } else {
           console.log(result.toString());
         }

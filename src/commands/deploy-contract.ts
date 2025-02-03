@@ -159,15 +159,12 @@ only the raw transaction hex will be logged.
         if (verbose) {
           this.log('Transaction ID:', result);
           const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
-          network.magicBytes !== STACKS_MOCKNET.magicBytes &&
-            this.log(
-              'View in explorer:',
-              `${explorerLink}?chain=${
-                network.chainId === STACKS_MAINNET.chainId
-                  ? 'mainnet'
-                  : 'testnet'
-              }`
-            );
+          this.log(
+            'View in explorer:',
+            `${explorerLink}?chain=${
+              network.chainId === STACKS_MAINNET.chainId ? 'mainnet' : 'testnet'
+            }`
+          );
         } else {
           console.log(result.toString());
         }
