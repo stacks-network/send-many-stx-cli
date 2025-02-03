@@ -7,18 +7,18 @@ import {
   sendStxTransfer,
 } from '../builder';
 import {
-  StacksMocknet,
-  StacksMainnet,
-  StacksTestnet,
+  STACKS_MOCKNET,
+  STACKS_MAINNET,
+  STACKS_TESTNET,
   StacksNetwork,
+  networkFrom,
 } from '@stacks/network';
 import {
   broadcastTransaction,
-  ChainID,
-  StacksTransaction,
+  StacksTransactionWire,
+  STXPostConditionWire,
   validateStacksAddress,
 } from '@stacks/transactions';
-import { STXPostCondition } from '@stacks/transactions/dist/transactions/src/postcondition';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 
@@ -119,16 +119,16 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
   getNetwork() {
     const { flags } = this.parse(SendMany);
     const networks = {
-      mainnet: StacksMainnet,
-      testnet: StacksTestnet,
-      mocknet: StacksMocknet,
+      mainnet: STACKS_MAINNET,
+      testnet: STACKS_TESTNET,
+      mocknet: STACKS_MOCKNET,
     };
 
     return networks[flags.network as NetworkString];
   }
 
   getContract(network: StacksNetwork) {
-    return network.chainId === ChainID.Testnet
+    return network.chainId === STACKS_TESTNET.chainId
       ? DEFAULT_TESTNET_CONTRACT
       : DEFAULT_MAINNET_CONTRACT;
   }
@@ -154,18 +154,21 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
     if (!networkClass) {
       throw new Error('Unable to get network');
     }
-    const network = new networkClass();
+    const network = networkFrom(networkClass);
     if (flags.nodeUrl) {
-      network.coreApiUrl = flags.nodeUrl;
+      network.client.baseUrl = flags.nodeUrl;
     }
 
-    if (network instanceof StacksMocknet && !flags.contractAddress) {
+    if (
+      network.magicBytes === STACKS_MOCKNET.magicBytes &&
+      !flags.contractAddress
+    ) {
       throw new Error('Must manually specify contract address for mocknet');
     }
     const contractIdentifier =
       flags.contractAddress || this.getContract(network);
 
-    let tx: StacksTransaction;
+    let tx: StacksTransactionWire;
     const performStxTransferTx: boolean =
       recipients.length === 1 && flags.allowSingleStxTransfer;
     if (performStxTransferTx) {
@@ -190,41 +193,46 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
     const verbose = !flags.quiet;
 
     if (verbose) {
-      this.log('Transaction hex:', tx.serialize().toString('hex'));
-      this.log('Fee:', tx.auth.getFee().toString());
-      this.log('Nonce:', tx.auth.spendingCondition?.nonce.toNumber());
+      this.log('Transaction hex:', tx.serialize());
+      this.log('Fee:', tx.auth.spendingCondition.fee.toString());
+      this.log('Nonce:', tx.auth.spendingCondition?.nonce.toString());
       this.log('Contract:', contractIdentifier);
       this.log('Sender:', getAddress(flags.privateKey, network));
-      const [postCondition] = tx.postConditions.values as STXPostCondition[];
-      this.log('Total amount:', postCondition.amount.toNumber());
+      const postCondition = tx.postConditions.values[0] as STXPostConditionWire;
+      this.log('Total amount:', postCondition.amount.toString());
       if (flags.allowSingleStxTransfer) {
         this.log('Is STX-transfer transaction type: ', performStxTransferTx);
       }
     }
 
     if (flags.broadcast) {
-      const result = await broadcastTransaction(tx, network);
-      if (typeof result === 'string') {
+      try {
+        const { txid: result } = await broadcastTransaction({
+          transaction: tx,
+          network,
+        });
         if (verbose) {
           this.log('Transaction ID:', result);
-          if (!(network instanceof StacksMocknet)) {
+          if (network.magicBytes !== STACKS_MOCKNET.magicBytes) {
             const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
             this.log(
               'View in explorer:',
               `${explorerLink}?chain=${
-                network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
+                network.chainId === STACKS_MAINNET.chainId
+                  ? 'mainnet'
+                  : 'testnet'
               }`
             );
           }
         } else {
           console.log(result.toString());
         }
-      } else {
-        this.log('Transaction rejected:', result);
+      } catch (error) {
+        this.log('Transaction rejected:', error);
         process.exit(1);
       }
     } else if (flags.quiet) {
-      console.log(tx.serialize().toString('hex'));
+      console.log(tx.serialize());
     }
   }
 }

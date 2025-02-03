@@ -18,7 +18,7 @@ $ npm install -g @stacks/send-many-stx-cli
 $ stx-bulk-transfer COMMAND
 running command...
 $ stx-bulk-transfer (-v|--version|version)
-@stacks/send-many-stx-cli/1.4.0 darwin-arm64 node-v15.14.0
+@stacks/send-many-stx-cli/1.4.0 darwin-arm64 node-v22.12.0
 $ stx-bulk-transfer --help [COMMAND]
 USAGE
   $ stx-bulk-transfer COMMAND
@@ -302,7 +302,7 @@ OPTIONS
 
 DESCRIPTION
   Example usage:
-
+  
      ```
      npx stx-bulk-transfer validate-address SP000000000000000000002Q6VF78 -n mainnet
      ```

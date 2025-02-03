@@ -1,14 +1,17 @@
 import { Command, flags } from '@oclif/command';
 import { getAddress } from '../builder';
-import { StacksMocknet, StacksMainnet, StacksTestnet } from '@stacks/network';
+import {
+  STACKS_MOCKNET,
+  STACKS_MAINNET,
+  STACKS_TESTNET,
+  networkFrom,
+} from '@stacks/network';
 import {
   broadcastTransaction,
-  ChainID,
   ContractDeployOptions,
   makeContractDeploy,
 } from '@stacks/transactions';
 import { promises as fs } from 'fs';
-import BN from 'bn.js';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 type Contract = 'send-many' | 'send-many-memo' | 'memo-expected';
@@ -90,9 +93,9 @@ only the raw transaction hex will be logged.
     const { flags } = this.parse(DeployContract);
 
     const networks = {
-      mainnet: StacksMainnet,
-      testnet: StacksTestnet,
-      mocknet: StacksMocknet,
+      mainnet: STACKS_MAINNET,
+      testnet: STACKS_TESTNET,
+      mocknet: STACKS_MOCKNET,
     };
 
     return networks[flags.network as NetworkString];
@@ -118,9 +121,9 @@ only the raw transaction hex will be logged.
     if (!networkClass) {
       throw new Error('Unable to get network');
     }
-    const network = new networkClass();
+    const network = networkFrom(networkClass);
     if (flags.nodeUrl) {
-      network.coreApiUrl = flags.nodeUrl;
+      network.client.baseUrl = flags.nodeUrl;
     }
 
     const txOptions: ContractDeployOptions = {
@@ -130,16 +133,16 @@ only the raw transaction hex will be logged.
       network,
     };
     if (flags.nonce !== undefined) {
-      txOptions.nonce = new BN(flags.nonce);
+      txOptions.nonce = flags.nonce;
     }
     const tx = await makeContractDeploy(txOptions);
 
     const verbose = !flags.quiet;
 
     if (verbose) {
-      this.log('Transaction hex:', tx.serialize().toString('hex'));
-      this.log('Fee:', tx.auth.getFee().toString());
-      this.log('Nonce:', tx.auth.spendingCondition?.nonce.toNumber());
+      this.log('Transaction hex:', tx.serialize());
+      this.log('Fee:', tx.auth.spendingCondition?.fee.toString());
+      this.log('Nonce:', tx.auth.spendingCondition?.nonce.toString());
       this.log(
         'Contract address:',
         `${getAddress(flags.privateKey, network)}.${contract}`
@@ -148,31 +151,32 @@ only the raw transaction hex will be logged.
     }
 
     if (flags.broadcast) {
-      const result = await broadcastTransaction(tx, network);
-      if (typeof result === 'string') {
+      try {
+        const { txid: result } = await broadcastTransaction({
+          transaction: tx,
+          network,
+        });
         if (verbose) {
           this.log('Transaction ID:', result);
           const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
-          !(network instanceof StacksMocknet) &&
+          network.magicBytes !== STACKS_MOCKNET.magicBytes &&
             this.log(
               'View in explorer:',
               `${explorerLink}?chain=${
-                network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
+                network.chainId === STACKS_MAINNET.chainId
+                  ? 'mainnet'
+                  : 'testnet'
               }`
             );
         } else {
           console.log(result.toString());
         }
-      } else {
-        if (result.reason === 'ContractAlreadyExists') {
-          this.log('Contract already deployed.');
-        } else {
-          this.log('Transaction rejected:', result);
-          process.exit(1);
-        }
+      } catch (error) {
+        console.error('Error broadcasting transaction:', error);
+        process.exit(1);
       }
     } else if (flags.quiet) {
-      console.log(tx.serialize().toString('hex'));
+      console.log(tx.serialize());
     }
   }
 }

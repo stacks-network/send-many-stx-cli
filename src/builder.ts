@@ -5,23 +5,18 @@ import {
   uintCV,
   listCV,
   PostConditionMode,
-  makeStandardSTXPostCondition,
-  FungibleConditionCode,
   SignedContractCallOptions,
   getAddressFromPrivateKey,
-  TransactionVersion,
-  ChainID,
   StandardPrincipalCV,
   UIntCV,
   BufferCV,
   bufferCVFromString,
-  estimateContractFunctionCall,
   SignedTokenTransferOptions,
   makeSTXTokenTransfer,
-  estimateTransfer,
+  fetchFeeEstimate,
+  Pc,
 } from '@stacks/transactions';
 import { StacksNetwork } from '@stacks/network';
-import BN from 'bn.js';
 
 export interface Recipient {
   /**
@@ -69,39 +64,26 @@ export async function sendStxTransfer({
   feeMultiplier,
   withMemo,
 }: SendStxTransferOptions) {
-  const sender = getAddress(senderKey, network);
-  let sum = new BN(0, 10);
-
-  const sendAmount = new BN(recipient.amount, 10);
-  sum = sum.add(sendAmount);
+  const sendAmount = BigInt(recipient.amount);
 
   const options: SignedTokenTransferOptions = {
     recipient: standardPrincipalCV(recipient.address),
     amount: sendAmount,
     senderKey,
-    postConditionMode: PostConditionMode.Deny,
-    postConditions: [
-      makeStandardSTXPostCondition(
-        sender,
-        FungibleConditionCode.Equal,
-        new BN(sum, 10)
-      ),
-    ],
     network,
   };
   if (withMemo) {
     options.memo = recipient.memo;
   }
 
-  if (nonce !== undefined) options.nonce = new BN(nonce, 10);
+  if (nonce !== undefined) options.nonce = nonce;
 
   if (feeMultiplier !== undefined) {
     const templateTx = await makeSTXTokenTransfer(options);
-    const estimatedFee = await estimateTransfer(templateTx, network);
-    const feeBump = (estimatedFee as BN)
-      .muln(feeMultiplier)
-      .divRound(new BN(100));
-    options.fee = (estimatedFee as BN).add(feeBump);
+    const estimatedFee = await fetchFeeEstimate({ transaction: templateTx });
+    const bumpedFee =
+      (BigInt(estimatedFee) * (100n + BigInt(feeMultiplier))) / 100n;
+    options.fee = bumpedFee;
   }
 
   const tx = await makeSTXTokenTransfer(options);
@@ -120,11 +102,10 @@ export async function sendMany({
 }: SendOptions) {
   const [contractAddress, contractName] = contractIdentifier.split('.');
 
-  const sender = getAddress(senderKey, network);
-  let sum = new BN(0, 10);
+  let sum = 0n;
 
   const recipientTuples = recipients.map(recipient => {
-    sum = sum.add(new BN(recipient.amount, 10));
+    sum = sum + BigInt(recipient.amount);
     const recipientTuple: RecipientTuple = {
       to: standardPrincipalCV(recipient.address),
       ustx: uintCV(recipient.amount),
@@ -145,27 +126,21 @@ export async function sendMany({
     senderKey,
     postConditionMode: PostConditionMode.Deny,
     postConditions: [
-      makeStandardSTXPostCondition(
-        sender,
-        FungibleConditionCode.Equal,
-        new BN(sum, 10)
-      ),
+      Pc.origin()
+        .willSendEq(sum)
+        .ustx(),
     ],
     network,
   };
 
-  if (nonce !== undefined) options.nonce = new BN(nonce, 10);
+  if (nonce !== undefined) options.nonce = nonce;
 
   if (feeMultiplier !== undefined) {
     const templateTx = await makeContractCall(options);
-    const estimatedFee = await estimateContractFunctionCall(
-      templateTx,
-      network
-    );
-    const feeBump = (estimatedFee as BN)
-      .muln(feeMultiplier)
-      .divRound(new BN(100));
-    options.fee = (estimatedFee as BN).add(feeBump);
+    const estimatedFee = await fetchFeeEstimate({ transaction: templateTx });
+    const bumpedFee =
+      (BigInt(estimatedFee) * (100n + BigInt(feeMultiplier))) / 100n;
+    options.fee = bumpedFee;
   }
 
   const tx = await makeContractCall(options);
@@ -179,9 +154,5 @@ export function isNormalInteger(str: string) {
 }
 
 export function getAddress(privateKey: string, network: StacksNetwork) {
-  const transactionVersion =
-    network.chainId === ChainID.Mainnet
-      ? TransactionVersion.Mainnet
-      : TransactionVersion.Testnet;
-  return getAddressFromPrivateKey(privateKey, transactionVersion);
+  return getAddressFromPrivateKey(privateKey, network);
 }

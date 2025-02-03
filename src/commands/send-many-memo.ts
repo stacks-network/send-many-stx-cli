@@ -7,18 +7,18 @@ import {
   sendStxTransfer,
 } from '../builder';
 import {
-  StacksMocknet,
-  StacksMainnet,
-  StacksTestnet,
+  STACKS_MOCKNET,
+  STACKS_MAINNET,
+  STACKS_TESTNET,
   StacksNetwork,
+  networkFrom,
 } from '@stacks/network';
 import {
   broadcastTransaction,
-  ChainID,
-  StacksTransaction,
+  StacksTransactionWire,
+  STXPostConditionWire,
   validateStacksAddress,
 } from '@stacks/transactions';
-import { STXPostCondition } from '@stacks/transactions/dist/transactions/src/postcondition';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 
@@ -124,16 +124,16 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
   getNetwork() {
     const { flags } = this.parse(SendManyMemo);
     const networks = {
-      mainnet: StacksMainnet,
-      testnet: StacksTestnet,
-      mocknet: StacksMocknet,
+      mainnet: STACKS_MAINNET,
+      testnet: STACKS_TESTNET,
+      mocknet: STACKS_MOCKNET,
     };
 
     return networks[flags.network as NetworkString];
   }
 
   getContract(network: StacksNetwork) {
-    return network.chainId === ChainID.Mainnet
+    return network.chainId === STACKS_MAINNET.chainId
       ? DEFAULT_MAINNET_CONTRACT
       : DEFAULT_TESTNET_CONTRACT;
   }
@@ -160,18 +160,21 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
     if (!networkClass) {
       throw new Error('Unable to get network');
     }
-    const network = new networkClass();
+    const network = networkFrom(networkClass);
     if (flags.nodeUrl) {
-      network.coreApiUrl = flags.nodeUrl;
+      network.client.baseUrl = flags.nodeUrl;
     }
 
-    if (network instanceof StacksMocknet && !flags.contractAddress) {
+    if (
+      network.magicBytes === STACKS_MOCKNET.magicBytes &&
+      !flags.contractAddress
+    ) {
       throw new Error('Must manually specify contract address for mocknet');
     }
     const contractIdentifier =
       flags.contractAddress || this.getContract(network);
 
-    let tx: StacksTransaction;
+    let tx: StacksTransactionWire;
     const performStxTransferTx: boolean =
       recipients.length === 1 && flags.allowSingleStxTransfer;
     if (performStxTransferTx) {
@@ -208,13 +211,13 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
         amount: r.amount,
         memo: r.memo || '',
       })),
-      fee: tx.auth.getFee().toString(),
+      fee: tx.auth.spendingCondition.fee.toString(),
       nonce: tx.auth.spendingCondition?.nonce.toString() || '?',
       contract: contractIdentifier,
       sender: getAddress(flags.privateKey, network),
       totalAmount: (tx.postConditions
-        .values as STXPostCondition[])[0].amount.toString(),
-      transactionHex: tx.serialize().toString('hex'),
+        .values[0] as STXPostConditionWire).amount.toString(),
+      transactionHex: tx.serialize(),
     };
 
     if (flags.allowSingleStxTransfer) {
@@ -223,36 +226,37 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
 
     let broadcastFailed = false;
     if (flags.broadcast) {
-      const result = await broadcastTransaction(tx, network);
-      if (typeof result === 'string') {
+      try {
+        const { txid: result } = await broadcastTransaction({
+          transaction: tx,
+          network,
+        });
         if (verbose) {
           outputEntries['success'] = true;
           outputEntries['transactionId'] = result;
-          if (!(network instanceof StacksMocknet)) {
+          if (network.magicBytes !== STACKS_MOCKNET.magicBytes) {
             const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
             outputEntries['explorerLink'] = `${explorerLink}?chain=${
-              network.chainId === ChainID.Mainnet ? 'mainnet' : 'testnet'
+              network.chainId === STACKS_MAINNET.chainId ? 'mainnet' : 'testnet'
             }`;
           }
         } else {
           if (flags.jsonOutput) {
-            console.log(JSON.stringify({ transactionId: result.toString() }));
+            console.log(JSON.stringify({ transactionId: result }));
           } else {
-            console.log(result.toString());
+            console.log(result);
           }
         }
-      } else {
+      } catch (error) {
         broadcastFailed = true;
         outputEntries['success'] = false;
-        outputEntries['error'] = JSON.stringify(result, null, 2);
+        outputEntries['error'] = (error as Error).toString();
       }
     } else if (flags.quiet) {
       if (flags.jsonOutput) {
-        console.log(
-          JSON.stringify({ transactionHex: tx.serialize().toString('hex') })
-        );
+        console.log(JSON.stringify({ transactionHex: tx.serialize() }));
       } else {
-        console.log(tx.serialize().toString('hex'));
+        console.log(tx.serialize());
       }
     }
 
