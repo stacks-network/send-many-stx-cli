@@ -12,6 +12,7 @@ import {
   makeContractDeploy,
 } from '@stacks/transactions';
 import { promises as fs } from 'fs';
+import { getExplorerUrlForTx } from '../util';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 type Contract = 'send-many' | 'send-many-memo' | 'memo-expected';
@@ -158,13 +159,10 @@ only the raw transaction hex will be logged.
         });
         if (verbose) {
           this.log('Transaction ID:', result);
-          const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
-          this.log(
-            'View in explorer:',
-            `${explorerLink}?chain=${
-              network.chainId === STACKS_MAINNET.chainId ? 'mainnet' : 'testnet'
-            }`
-          );
+          const explorerLink = getExplorerUrlForTx(result, flags.network);
+          if (explorerLink) {
+            this.log('View in explorer:', explorerLink);
+          }
         } else {
           console.log(result.toString());
         }

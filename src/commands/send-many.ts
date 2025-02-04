@@ -19,6 +19,7 @@ import {
   STXPostConditionWire,
   validateStacksAddress,
 } from '@stacks/transactions';
+import { getExplorerUrlForTx } from '../util';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 
@@ -33,8 +34,8 @@ export class SendMany extends Command {
 
   The default contracts can be found below:
 
-  Testnet: https://explorer.stacks.co/txid/${DEFAULT_TESTNET_CONTRACT}?chain=testnet
-  Mainnet: https://explorer.stacks.co/txid/${DEFAULT_MAINNET_CONTRACT}?chain=mainnet
+  Testnet: https://explorer.hiro.so/txid/${DEFAULT_TESTNET_CONTRACT}?chain=testnet
+  Mainnet: https://explorer.hiro.so/txid/${DEFAULT_MAINNET_CONTRACT}?chain=mainnet
 
   Example usage:
 
@@ -213,13 +214,10 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM
         });
         if (verbose) {
           this.log('Transaction ID:', result);
-          const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
-          this.log(
-            'View in explorer:',
-            `${explorerLink}?chain=${
-              network.chainId === STACKS_MAINNET.chainId ? 'mainnet' : 'testnet'
-            }`
-          );
+          const explorerLink = getExplorerUrlForTx(result, flags.network);
+          if (explorerLink) {
+            this.log('View in explorer:', explorerLink);
+          }
         } else {
           console.log(result.toString());
         }

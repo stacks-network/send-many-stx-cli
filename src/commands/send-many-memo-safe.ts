@@ -20,6 +20,7 @@ import {
   STXPostConditionWire,
   validateStacksAddress,
 } from '@stacks/transactions';
+import { getExplorerUrlForTx } from '../util';
 
 type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
 
@@ -64,8 +65,8 @@ export class SendManyMemoSafe extends Command {
 
   The default contracts can be found below:
 
-  Testnet: https://explorer.stacks.co/txid/${DEFAULT_TESTNET_CONTRACT}?chain=testnet
-  Mainnet: https://explorer.stacks.co/txid/${DEFAULT_MAINNET_CONTRACT}?chain=mainnet
+  Testnet: https://explorer.hiro.so/txid/${DEFAULT_TESTNET_CONTRACT}?chain=testnet
+  Mainnet: https://explorer.hiro.so/txid/${DEFAULT_MAINNET_CONTRACT}?chain=mainnet
 
   Example usage:
 
@@ -278,10 +279,10 @@ Example: STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,memo ST2WPFYAW85A0YK9ACJR8
         if (verbose) {
           outputEntries['success'] = true;
           outputEntries['transactionId'] = result;
-          const explorerLink = `https://explorer.stacks.co/txid/0x${result}`;
-          outputEntries['explorerLink'] = `${explorerLink}?chain=${
-            network.chainId === STACKS_MAINNET.chainId ? 'mainnet' : 'testnet'
-          }`;
+          const explorerLink = getExplorerUrlForTx(result, flags.network);
+          if (explorerLink) {
+            outputEntries['explorerLink'] = explorerLink;
+          }
         } else {
           if (flags.jsonOutput) {
             console.log(JSON.stringify({ transactionId: result.toString() }));
