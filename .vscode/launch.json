@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Deploy send-many-memo contract",
+      "preLaunchTask": "npm: build",
+      "args": [
+        "${workspaceFolder}/src/start.ts",
+        "deploy-contract", "send-many-memo",
+        "-n=testnet", 
+        "--broadcast",
+        "-k=<YOUR_PRIVATE_KEY>",
+      ],
+      "outputCapture": "std",
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Perform send-many-memo contract-call",
+      "preLaunchTask": "npm: build",
+      "args": [
+        "${workspaceFolder}/bin/run",
+        "send-many-memo", "STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,1,hello", "ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,5,memo2", 
+        "-n=testnet", 
+        "--broadcast",
+        "-k=<YOUR_PRIVATE_KEY>",
+      ],
+      "outputCapture": "std"
+    }
+  ]
+}

@@ -27,7 +27,7 @@ export class ValidateAddress extends Command {
       char: 'v',
       default: false,
       description: 'Print error information for invalid addresses',
-    })
+    }),
   };
 
   static args = [
@@ -66,16 +66,16 @@ export class ValidateAddress extends Command {
       const [version] = c32addressDecode(address);
       if (version === networkVersion.p2pkh || version === networkVersion.p2sh) {
         this.log('1');
-      }
-      else {
+      } else {
         this.log('0');
         process.exitCode = 1; // Exit code 1 means valid address but incorrect network version.
         if (flags.verbose) {
-          this.log(`Valid address but incorrect network version (address version: ${version}, expected: ${networkVersion.p2pkh} or ${networkVersion.p2sh})`);
+          this.log(
+            `Valid address but incorrect network version (address version: ${version}, expected: ${networkVersion.p2pkh} or ${networkVersion.p2sh})`
+          );
         }
       }
-    }
-    catch (error) {
+    } catch (error) {
       this.log('0');
       process.exitCode = 2; // Exit code 2 means malformed STX address.
       if (flags.verbose) {
