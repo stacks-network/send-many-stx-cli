@@ -4,10 +4,10 @@
   "author": "Hiro PBC",
   "version": "1.4.0",
   "license": "MIT",
-  "homepage": "https://github.com/blockstack/send-many-stx-cli",
+  "homepage": "https://github.com/stacks-network/send-many-stx-cli",
   "repository": {
     "type": "git",
-    "url": "https://github.com/blockstack/send-many-stx-cli.git"
+    "url": "https://github.com/stacks-network/send-many-stx-cli.git"
   },
   "main": "dist/index.js",
   "files": [
