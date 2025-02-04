@@ -18,7 +18,7 @@ $ npm install -g @stacks/send-many-stx-cli
 $ stx-bulk-transfer COMMAND
 running command...
 $ stx-bulk-transfer (-v|--version|version)
-@stacks/send-many-stx-cli/1.4.0 darwin-arm64 node-v22.12.0
+@stacks/send-many-stx-cli/2.0.0 darwin-arm64 node-v22.12.0
 $ stx-bulk-transfer --help [COMMAND]
 USAGE
   $ stx-bulk-transfer COMMAND
@@ -84,7 +84,7 @@ DESCRIPTION
      ```
 ```
 
-_See code: [dist/commands/deploy-contract.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/deploy-contract.ts)_
+_See code: [dist/commands/deploy-contract.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/dist/commands/deploy-contract.ts)_
 
 ## `stx-bulk-transfer send-many [RECIPIENTS]`
 
@@ -147,7 +147,7 @@ DESCRIPTION
      ```
 ```
 
-_See code: [dist/commands/send-many.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/send-many.ts)_
+_See code: [dist/commands/send-many.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/dist/commands/send-many.ts)_
 
 ## `stx-bulk-transfer send-many-memo [RECIPIENTS]`
 
@@ -212,7 +212,7 @@ DESCRIPTION
      ```
 ```
 
-_See code: [dist/commands/send-many-memo.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/send-many-memo.ts)_
+_See code: [dist/commands/send-many-memo.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/dist/commands/send-many-memo.ts)_
 
 ## `stx-bulk-transfer send-many-memo-safe [RECIPIENTS]`
 
@@ -282,7 +282,7 @@ DESCRIPTION
      ```
 ```
 
-_See code: [dist/commands/send-many-memo-safe.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/send-many-memo-safe.ts)_
+_See code: [dist/commands/send-many-memo-safe.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/dist/commands/send-many-memo-safe.ts)_
 
 ## `stx-bulk-transfer validate-address [ADDRESS]`
 
@@ -308,7 +308,7 @@ DESCRIPTION
      ```
 ```
 
-_See code: [dist/commands/validate-address.ts](https://github.com/blockstack/send-many-stx-cli/blob/v1.4.0/dist/commands/validate-address.ts)_
+_See code: [dist/commands/validate-address.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/dist/commands/validate-address.ts)_
 <!-- commandsstop -->
 
 ## Development
