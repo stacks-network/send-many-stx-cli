@@ -136,8 +136,8 @@ DESCRIPTION
 
      The default contracts can be found below:
 
-     Testnet: https://explorer.stacks.co/txid/ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B.send-many?chain=testnet
-     Mainnet: https://explorer.stacks.co/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many?chain=mainnet
+     Testnet: https://explorer.hiro.so/txid/ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B.send-many?chain=testnet
+     Mainnet: https://explorer.hiro.so/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many?chain=mainnet
 
      Example usage:
 
@@ -201,8 +201,8 @@ DESCRIPTION
 
      The default contracts can be found below:
 
-     Testnet: https://explorer.stacks.co/txid/ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B.send-many-memo?chain=testnet
-     Mainnet: https://explorer.stacks.co/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many-memo?chain=mainnet
+     Testnet: https://explorer.hiro.so/txid/ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B.send-many-memo?chain=testnet
+     Mainnet: https://explorer.hiro.so/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many-memo?chain=mainnet
 
      Example usage:
 
@@ -271,8 +271,8 @@ DESCRIPTION
 
      The default contracts can be found below:
 
-     Testnet: https://explorer.stacks.co/txid/ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B.send-many-memo?chain=testnet
-     Mainnet: https://explorer.stacks.co/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many-memo?chain=mainnet
+     Testnet: https://explorer.hiro.so/txid/ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B.send-many-memo?chain=testnet
+     Mainnet: https://explorer.hiro.so/txid/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many-memo?chain=mainnet
 
      Example usage:
 
