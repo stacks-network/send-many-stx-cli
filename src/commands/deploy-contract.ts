@@ -84,7 +84,10 @@ only the raw transaction hex will be logged.
 
   async getContractCode(contract: Contract) {
     if (contract === 'memo-expected') return '(print "ok")';
-    return fs.readFile(`./contracts/${contract}.clar`, 'utf8');
+    let contractSrc = await fs.readFile(`./contracts/${contract}.clar`, 'utf8');
+    // replace Windows newlines with LF
+    contractSrc = contractSrc.replaceAll('\r\n', '\n');
+    return contractSrc; 
   }
 
   getNetwork(flags: { network: string }) {
