@@ -1,0 +1,6 @@
+# This is a CODEOWNERS file.
+# Lines starting with '#' are comments.
+# The '*' means all files in the repository.
+# Both zone117x and janniks will be automatically requested for reviews.
+
+* @zone117x @janniks
