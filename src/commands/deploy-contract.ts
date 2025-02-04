@@ -1,21 +1,22 @@
-import { Command, flags } from '@oclif/command';
-import { getAddress } from '../builder';
+import {Args, Command, Flags} from '@oclif/core'
 import {
-  STACKS_MOCKNET,
-  STACKS_MAINNET,
-  STACKS_TESTNET,
   networkFrom,
+  STACKS_MAINNET,
+  STACKS_MOCKNET,
+  STACKS_TESTNET,
 } from '@stacks/network';
 import {
   broadcastTransaction,
   ContractDeployOptions,
   makeContractDeploy,
 } from '@stacks/transactions';
-import { promises as fs } from 'fs';
+import { promises as fs } from 'node:fs';
+
+import { getAddress } from '../builder';
 import { getExplorerUrlForTx } from '../util';
 
-type NetworkString = 'mocknet' | 'mainnet' | 'testnet';
-type Contract = 'send-many' | 'send-many-memo' | 'memo-expected';
+type NetworkString = 'mainnet' | 'mocknet' | 'testnet';
+type Contract = 'memo-expected' | 'send-many' | 'send-many-memo';
 
 function isValidContract(input: string): input is Contract {
   return (
@@ -25,7 +26,10 @@ function isValidContract(input: string): input is Contract {
   );
 }
 
-export class DeployContract extends Command {
+export default class DeployContract extends Command {
+  static override args = {
+    contract: Args.string({description: 'The contract to deploy'}),
+  }
   static description = `Deploy \`send-many\`, \`send-many-memo\`, \`memo-expected\`.
   A utility to simplify deploying contracts related to the STX bulk transfer tool. It deploys
   the contract on the address of the provided private key.
@@ -35,41 +39,38 @@ export class DeployContract extends Command {
   The memo-expected contract is an empty contract that is checked by the \`send-many-memo-safe\`
   command. If a contract called 'memo-expected' is deployed on a principal, and no memo is passed,
   the send-many will be aborted before it reaches the chain.
-
-  Example usage:
-
-  \`\`\`
-  npx stx-bulk-transfer deploy-contract memo-expected -k my_private_key -n testnet -b
-  \`\`\`
   `;
-  static strict = true;
-
-  static flags = {
-    help: flags.help({ char: 'h' }),
-    privateKey: flags.string({
-      char: 'k',
-      description: 'Your private key',
-      required: true,
-    }),
-    broadcast: flags.boolean({
+  static override examples = [
+    '<%= config.bin %> <%= command.id %> memo-expected -k my_private_key -n testnet -b',
+  ];
+  static override flags = {
+    broadcast: Flags.boolean({
       char: 'b',
       default: false,
       description:
         'Whether to broadcast this transaction. Omitting this flag will not broadcast the transaction.',
     }),
-    network: flags.string({
+    network: Flags.string({
       char: 'n',
+      default: 'testnet',
       description: 'Which network to broadcast this to',
       options: ['mocknet', 'testnet', 'mainnet'],
-      default: 'testnet',
     }),
-    nodeUrl: flags.string({
-      required: false,
+    nodeUrl: Flags.string({
       char: 'u',
       description:
         'A default node URL will be used based on the `network` option. Use this flag to manually override.',
+      required: false,
     }),
-    quiet: flags.boolean({
+    nonce: Flags.integer({
+      description: 'Optionally specify a nonce for this transaction',
+    }),
+    privateKey: Flags.string({
+      char: 'k',
+      description: 'Your private key',
+      required: true,
+    }),
+    quiet: Flags.boolean({
       char: 'q',
       default: false,
       description: `
@@ -78,64 +79,56 @@ only the transaction ID will be logged. If the quiet flagged is passed without b
 only the raw transaction hex will be logged.
 `,
     }),
-    nonce: flags.integer({
-      description: 'Optionally specify a nonce for this transaction',
-    }),
-  };
-
-  static args = [
-    {
-      name: 'contract',
-      description: `The contract to deploy`,
-    },
-  ];
-
-  getNetwork() {
-    const { flags } = this.parse(DeployContract);
-
-    const networks = {
-      mainnet: STACKS_MAINNET,
-      testnet: STACKS_TESTNET,
-      mocknet: STACKS_MOCKNET,
-    };
-
-    return networks[flags.network as NetworkString];
   }
+  static strict = true;
 
   async getContractCode(contract: Contract) {
     if (contract === 'memo-expected') return '(print "ok")';
-    return await fs.readFile(`./contracts/${contract}.clar`, 'utf8');
+    return fs.readFile(`./contracts/${contract}.clar`, 'utf8');
   }
 
-  async run() {
-    const { argv, flags } = this.parse(DeployContract);
-    const [contract] = argv;
+  getNetwork(flags: { network: string }) {
+    const networks = {
+      mainnet: STACKS_MAINNET,
+      mocknet: STACKS_MOCKNET,
+      testnet: STACKS_TESTNET,
+    };
+    return networks[flags.network as NetworkString];
+  }
+
+  public async run(): Promise<void> {
+    const {args, flags} = await this.parse(DeployContract)
+
+    const { contract } = args;
 
     if (!contract) {
       throw new Error('No contract specified, try --help');
     }
+
     if (!isValidContract(contract)) {
       throw new Error(`Invalid contract ${contract}`);
     }
 
-    const networkClass = this.getNetwork();
+    const networkClass = this.getNetwork(flags);
     if (!networkClass) {
       throw new Error('Unable to get network');
     }
+
     const network = networkFrom(networkClass);
     if (flags.nodeUrl) {
       network.client.baseUrl = flags.nodeUrl;
     }
 
     const txOptions: ContractDeployOptions = {
-      contractName: contract,
       codeBody: await this.getContractCode(contract),
-      senderKey: flags.privateKey,
+      contractName: contract,
       network,
+      senderKey: flags.privateKey,
     };
     if (flags.nonce !== undefined) {
       txOptions.nonce = flags.nonce;
     }
+
     const tx = await makeContractDeploy(txOptions);
 
     const verbose = !flags.quiet;
@@ -154,8 +147,8 @@ only the raw transaction hex will be logged.
     if (flags.broadcast) {
       try {
         const { txid: result } = await broadcastTransaction({
-          transaction: tx,
           network,
+          transaction: tx,
         });
         if (verbose) {
           this.log('Transaction ID:', result);
@@ -168,7 +161,7 @@ only the raw transaction hex will be logged.
         }
       } catch (error) {
         console.error('Error broadcasting transaction:', error);
-        process.exit(1);
+        this.exit(1);
       }
     } else if (flags.quiet) {
       console.log(tx.serialize());

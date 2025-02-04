@@ -1,87 +1,73 @@
 {
   "name": "@stacks/send-many-stx-cli",
   "description": "A simple CLI for making a bulk STX transfer in one command.",
-  "author": "Hiro PBC",
   "version": "2.0.0",
-  "license": "MIT",
+  "author": "Hiro PBC",
+  "bin": {
+    "stx-bulk-transfer": "./bin/run.js"
+  },
+  "bugs": "https://github.com/stacks-network/send-many-stx-cli/issues",
+  "dependencies": {
+    "@oclif/core": "^4",
+    "@oclif/plugin-help": "^6",
+    "@oclif/plugin-plugins": "^5",
+    "@stacks/network": "^7.0.2",
+    "@stacks/transactions": "^7.0.4",
+    "c32check": "^2.0.0"
+  },
+  "devDependencies": {
+    "@eslint/compat": "^1",
+    "@oclif/prettier-config": "^0.2.1",
+    "@oclif/test": "^4",
+    "@types/chai": "^4",
+    "@types/mocha": "^10",
+    "@types/node": "^18",
+    "chai": "^4",
+    "eslint": "^9",
+    "eslint-config-oclif": "^6",
+    "eslint-config-prettier": "^10",
+    "mocha": "^10",
+    "oclif": "^4",
+    "shx": "^0.3.3",
+    "ts-node": "^10",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "./bin",
+    "./dist",
+    "./oclif.manifest.json"
+  ],
   "homepage": "https://github.com/stacks-network/send-many-stx-cli",
+  "keywords": [
+    "oclif"
+  ],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "oclif": {
+    "bin": "stx-bulk-transfer",
+    "dirname": "stx-bulk-transfer",
+    "commands": "./dist/commands",
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-plugins"
+    ],
+    "topicSeparator": " "
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/stacks-network/send-many-stx-cli.git"
   },
-  "main": "dist/index.js",
-  "files": [
-    "dist",
-    "src",
-    "bin",
-    "/oclif.manifest.json"
-  ],
-  "engines": {
-    "node": ">=22"
-  },
   "scripts": {
-    "start": "ts-node src/start.ts",
-    "compile": "ncc build src/index.ts --no-source-map-register -e @oclif/command -e @oclif/errors",
-    "build-single-file": "npm run compile && oclif-dev readme",
-    "build": "rm -rf dist && tsc -b && oclif-dev readme && oclif-dev manifest",
-    "test": "tsdx test",
-    "lint": "tsdx lint",
-    "size": "size-limit",
-    "analyze": "size-limit --why",
-    "docs": "oclif-dev readme",
-    "version": "npm run build",
-    "typecheck": "tsc --noEmit",
-    "postpack": "rm -f oclif.manifest.json",
-    "prepack": "npm run build"
+    "build": "shx rm -rf dist && tsc -b",
+    "lint": "eslint",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "posttest": "npm run lint",
+    "prepack": "oclif manifest && oclif readme",
+    "test": "mocha --forbid-only \"test/**/*.test.ts\"",
+    "version": "oclif readme && git add README.md"
   },
-  "bin": {
-    "stx-bulk-transfer": "./bin/run"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "tsdx lint"
-    }
-  },
-  "oclif": {
-    "commands": "./dist/commands",
-    "bin": "stx-bulk-transfer"
-  },
-  "prettier": {
-    "printWidth": 80,
-    "semi": true,
-    "singleQuote": true,
-    "trailingComma": "es5"
-  },
-  "size-limit": [
-    {
-      "path": "dist/bulk-send.cjs.production.min.js",
-      "limit": "10 KB"
-    },
-    {
-      "path": "dist/bulk-send.esm.js",
-      "limit": "10 KB"
-    }
-  ],
-  "devDependencies": {
-    "@oclif/config": "^1.17.0",
-    "@oclif/dev-cli": "^1.26.0",
-    "@oclif/errors": "^1.3.4",
-    "@size-limit/preset-small-lib": "^4.9.1",
-    "@vercel/ncc": "^0.38.3",
-    "cli-ux": "^5.5.1",
-    "husky": "^4.3.8",
-    "oclif": "^1.16.1",
-    "size-limit": "^4.9.1",
-    "ts-node": "^10.9.2",
-    "tsdx": "^0.14.1",
-    "typescript": "^5.7.3"
-  },
-  "dependencies": {
-    "@oclif/command": "^1.8.0",
-    "@stacks/transactions": "^7.0.4",
-    "c32check": "^1.1.2"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+  "types": "dist/index.d.ts"
 }
