@@ -17,7 +17,7 @@ $ npm install -g @stacks/send-many-stx-cli
 $ stx-bulk-transfer COMMAND
 running command...
 $ stx-bulk-transfer (--version)
-@stacks/send-many-stx-cli/0.0.0 darwin-arm64 node-v22.12.0
+@stacks/send-many-stx-cli/2.0.0 darwin-arm64 node-v22.12.0
 $ stx-bulk-transfer --help [COMMAND]
 USAGE
   $ stx-bulk-transfer COMMAND
@@ -28,16 +28,6 @@ USAGE
 <!-- commands -->
 * [`stx-bulk-transfer deploy-contract [CONTRACT]`](#stx-bulk-transfer-deploy-contract-contract)
 * [`stx-bulk-transfer help [COMMAND]`](#stx-bulk-transfer-help-command)
-* [`stx-bulk-transfer plugins`](#stx-bulk-transfer-plugins)
-* [`stx-bulk-transfer plugins add PLUGIN`](#stx-bulk-transfer-plugins-add-plugin)
-* [`stx-bulk-transfer plugins:inspect PLUGIN...`](#stx-bulk-transfer-pluginsinspect-plugin)
-* [`stx-bulk-transfer plugins install PLUGIN`](#stx-bulk-transfer-plugins-install-plugin)
-* [`stx-bulk-transfer plugins link PATH`](#stx-bulk-transfer-plugins-link-path)
-* [`stx-bulk-transfer plugins remove [PLUGIN]`](#stx-bulk-transfer-plugins-remove-plugin)
-* [`stx-bulk-transfer plugins reset`](#stx-bulk-transfer-plugins-reset)
-* [`stx-bulk-transfer plugins uninstall [PLUGIN]`](#stx-bulk-transfer-plugins-uninstall-plugin)
-* [`stx-bulk-transfer plugins unlink [PLUGIN]`](#stx-bulk-transfer-plugins-unlink-plugin)
-* [`stx-bulk-transfer plugins update`](#stx-bulk-transfer-plugins-update)
 * [`stx-bulk-transfer send-many [RECIPIENTS]`](#stx-bulk-transfer-send-many-recipients)
 * [`stx-bulk-transfer send-many-memo [RECIPIENTS]`](#stx-bulk-transfer-send-many-memo-recipients)
 * [`stx-bulk-transfer send-many-memo-safe [RECIPIENTS]`](#stx-bulk-transfer-send-many-memo-safe-recipients)
@@ -84,7 +74,7 @@ EXAMPLES
   $ stx-bulk-transfer deploy-contract memo-expected -k my_private_key -n testnet -b
 ```
 
-_See code: [src/commands/deploy-contract.ts](https://github.com/send-many-stx-cli-beta/send-many-stx-cli/blob/v0.0.0/src/commands/deploy-contract.ts)_
+_See code: [src/commands/deploy-contract.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/src/commands/deploy-contract.ts)_
 
 ## `stx-bulk-transfer help [COMMAND]`
 
@@ -105,296 +95,6 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.24/src/commands/help.ts)_
-
-## `stx-bulk-transfer plugins`
-
-List installed plugins.
-
-```
-USAGE
-  $ stx-bulk-transfer plugins [--json] [--core]
-
-FLAGS
-  --core  Show core plugins.
-
-GLOBAL FLAGS
-  --json  Format output as json.
-
-DESCRIPTION
-  List installed plugins.
-
-EXAMPLES
-  $ stx-bulk-transfer plugins
-```
-
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.30/src/commands/plugins/index.ts)_
-
-## `stx-bulk-transfer plugins add PLUGIN`
-
-Installs a plugin into stx-bulk-transfer.
-
-```
-USAGE
-  $ stx-bulk-transfer plugins add PLUGIN... [--json] [-f] [-h] [-s | -v]
-
-ARGUMENTS
-  PLUGIN...  Plugin to install.
-
-FLAGS
-  -f, --force    Force npm to fetch remote resources even if a local copy exists on disk.
-  -h, --help     Show CLI help.
-  -s, --silent   Silences npm output.
-  -v, --verbose  Show verbose npm output.
-
-GLOBAL FLAGS
-  --json  Format output as json.
-
-DESCRIPTION
-  Installs a plugin into stx-bulk-transfer.
-
-  Uses npm to install plugins.
-
-  Installation of a user-installed plugin will override a core plugin.
-
-  Use the STX_BULK_TRANSFER_NPM_LOG_LEVEL environment variable to set the npm loglevel.
-  Use the STX_BULK_TRANSFER_NPM_REGISTRY environment variable to set the npm registry.
-
-ALIASES
-  $ stx-bulk-transfer plugins add
-
-EXAMPLES
-  Install a plugin from npm registry.
-
-    $ stx-bulk-transfer plugins add myplugin
-
-  Install a plugin from a github url.
-
-    $ stx-bulk-transfer plugins add https://github.com/someuser/someplugin
-
-  Install a plugin from a github slug.
-
-    $ stx-bulk-transfer plugins add someuser/someplugin
-```
-
-## `stx-bulk-transfer plugins:inspect PLUGIN...`
-
-Displays installation properties of a plugin.
-
-```
-USAGE
-  $ stx-bulk-transfer plugins inspect PLUGIN...
-
-ARGUMENTS
-  PLUGIN...  [default: .] Plugin to inspect.
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-GLOBAL FLAGS
-  --json  Format output as json.
-
-DESCRIPTION
-  Displays installation properties of a plugin.
-
-EXAMPLES
-  $ stx-bulk-transfer plugins inspect myplugin
-```
-
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.30/src/commands/plugins/inspect.ts)_
-
-## `stx-bulk-transfer plugins install PLUGIN`
-
-Installs a plugin into stx-bulk-transfer.
-
-```
-USAGE
-  $ stx-bulk-transfer plugins install PLUGIN... [--json] [-f] [-h] [-s | -v]
-
-ARGUMENTS
-  PLUGIN...  Plugin to install.
-
-FLAGS
-  -f, --force    Force npm to fetch remote resources even if a local copy exists on disk.
-  -h, --help     Show CLI help.
-  -s, --silent   Silences npm output.
-  -v, --verbose  Show verbose npm output.
-
-GLOBAL FLAGS
-  --json  Format output as json.
-
-DESCRIPTION
-  Installs a plugin into stx-bulk-transfer.
-
-  Uses npm to install plugins.
-
-  Installation of a user-installed plugin will override a core plugin.
-
-  Use the STX_BULK_TRANSFER_NPM_LOG_LEVEL environment variable to set the npm loglevel.
-  Use the STX_BULK_TRANSFER_NPM_REGISTRY environment variable to set the npm registry.
-
-ALIASES
-  $ stx-bulk-transfer plugins add
-
-EXAMPLES
-  Install a plugin from npm registry.
-
-    $ stx-bulk-transfer plugins install myplugin
-
-  Install a plugin from a github url.
-
-    $ stx-bulk-transfer plugins install https://github.com/someuser/someplugin
-
-  Install a plugin from a github slug.
-
-    $ stx-bulk-transfer plugins install someuser/someplugin
-```
-
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.30/src/commands/plugins/install.ts)_
-
-## `stx-bulk-transfer plugins link PATH`
-
-Links a plugin into the CLI for development.
-
-```
-USAGE
-  $ stx-bulk-transfer plugins link PATH [-h] [--install] [-v]
-
-ARGUMENTS
-  PATH  [default: .] path to plugin
-
-FLAGS
-  -h, --help          Show CLI help.
-  -v, --verbose
-      --[no-]install  Install dependencies after linking the plugin.
-
-DESCRIPTION
-  Links a plugin into the CLI for development.
-
-  Installation of a linked plugin will override a user-installed or core plugin.
-
-  e.g. If you have a user-installed or core plugin that has a 'hello' command, installing a linked plugin with a 'hello'
-  command will override the user-installed or core plugin implementation. This is useful for development work.
-
-
-EXAMPLES
-  $ stx-bulk-transfer plugins link myplugin
-```
-
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.30/src/commands/plugins/link.ts)_
-
-## `stx-bulk-transfer plugins remove [PLUGIN]`
-
-Removes a plugin from the CLI.
-
-```
-USAGE
-  $ stx-bulk-transfer plugins remove [PLUGIN...] [-h] [-v]
-
-ARGUMENTS
-  PLUGIN...  plugin to uninstall
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Removes a plugin from the CLI.
-
-ALIASES
-  $ stx-bulk-transfer plugins unlink
-  $ stx-bulk-transfer plugins remove
-
-EXAMPLES
-  $ stx-bulk-transfer plugins remove myplugin
-```
-
-## `stx-bulk-transfer plugins reset`
-
-Remove all user-installed and linked plugins.
-
-```
-USAGE
-  $ stx-bulk-transfer plugins reset [--hard] [--reinstall]
-
-FLAGS
-  --hard       Delete node_modules and package manager related files in addition to uninstalling plugins.
-  --reinstall  Reinstall all plugins after uninstalling.
-```
-
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.30/src/commands/plugins/reset.ts)_
-
-## `stx-bulk-transfer plugins uninstall [PLUGIN]`
-
-Removes a plugin from the CLI.
-
-```
-USAGE
-  $ stx-bulk-transfer plugins uninstall [PLUGIN...] [-h] [-v]
-
-ARGUMENTS
-  PLUGIN...  plugin to uninstall
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Removes a plugin from the CLI.
-
-ALIASES
-  $ stx-bulk-transfer plugins unlink
-  $ stx-bulk-transfer plugins remove
-
-EXAMPLES
-  $ stx-bulk-transfer plugins uninstall myplugin
-```
-
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.30/src/commands/plugins/uninstall.ts)_
-
-## `stx-bulk-transfer plugins unlink [PLUGIN]`
-
-Removes a plugin from the CLI.
-
-```
-USAGE
-  $ stx-bulk-transfer plugins unlink [PLUGIN...] [-h] [-v]
-
-ARGUMENTS
-  PLUGIN...  plugin to uninstall
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Removes a plugin from the CLI.
-
-ALIASES
-  $ stx-bulk-transfer plugins unlink
-  $ stx-bulk-transfer plugins remove
-
-EXAMPLES
-  $ stx-bulk-transfer plugins unlink myplugin
-```
-
-## `stx-bulk-transfer plugins update`
-
-Update installed plugins.
-
-```
-USAGE
-  $ stx-bulk-transfer plugins update [-h] [-v]
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Update installed plugins.
-```
-
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.30/src/commands/plugins/update.ts)_
 
 ## `stx-bulk-transfer send-many [RECIPIENTS]`
 
@@ -445,7 +145,7 @@ EXAMPLES
   $ stx-bulk-transfer send-many STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50 -k my_private_key -n testnet -b
 ```
 
-_See code: [src/commands/send-many.ts](https://github.com/send-many-stx-cli-beta/send-many-stx-cli/blob/v0.0.0/src/commands/send-many.ts)_
+_See code: [src/commands/send-many.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/src/commands/send-many.ts)_
 
 ## `stx-bulk-transfer send-many-memo [RECIPIENTS]`
 
@@ -497,7 +197,7 @@ EXAMPLES
   $ stx-bulk-transfer send-many-memo STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,hello ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50,memo2 -k my_private_key -n testnet -b
 ```
 
-_See code: [src/commands/send-many-memo.ts](https://github.com/send-many-stx-cli-beta/send-many-stx-cli/blob/v0.0.0/src/commands/send-many-memo.ts)_
+_See code: [src/commands/send-many-memo.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/src/commands/send-many-memo.ts)_
 
 ## `stx-bulk-transfer send-many-memo-safe [RECIPIENTS]`
 
@@ -553,7 +253,7 @@ EXAMPLES
   $ stx-bulk-transfer send-many-memo-safe STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,hello ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50,memo2 -k my_private_key -n testnet -b
 ```
 
-_See code: [src/commands/send-many-memo-safe.ts](https://github.com/send-many-stx-cli-beta/send-many-stx-cli/blob/v0.0.0/src/commands/send-many-memo-safe.ts)_
+_See code: [src/commands/send-many-memo-safe.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/src/commands/send-many-memo-safe.ts)_
 
 ## `stx-bulk-transfer validate-address [ADDRESS]`
 
@@ -578,5 +278,5 @@ EXAMPLES
   $ stx-bulk-transfer validate-address SP000000000000000000002Q6VF78 -n mainnet
 ```
 
-_See code: [src/commands/validate-address.ts](https://github.com/send-many-stx-cli-beta/send-many-stx-cli/blob/v0.0.0/src/commands/validate-address.ts)_
+_See code: [src/commands/validate-address.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/src/commands/validate-address.ts)_
 <!-- commandsstop -->
