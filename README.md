@@ -280,3 +280,4 @@ EXAMPLES
 
 _See code: [src/commands/validate-address.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v3.0.0/src/commands/validate-address.ts)_
 <!-- commandsstop -->
+<!-- commandsstop -->
