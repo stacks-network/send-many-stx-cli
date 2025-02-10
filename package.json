@@ -1,7 +1,7 @@
 {
   "name": "@stacks/send-many-stx-cli",
   "description": "A simple CLI for making a bulk STX transfer in one command.",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "author": "Hiro PBC",
   "bin": {
     "stx-bulk-transfer": "./bin/run.js"
