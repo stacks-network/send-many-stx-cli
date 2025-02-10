@@ -1,6 +1,7 @@
 name: version, tag and github release
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
 
@@ -46,11 +47,11 @@ jobs:
             git push -u origin ${{ github.ref_name }}
           fi
       - name: Create Github Release
-        uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda #v2.2.1
         if: ${{ steps.version-check.outputs.skipped == 'false' }}
         with:
           name: ${{ steps.version-check.outputs.tag }}
-          tag: ${{ steps.version-check.outputs.tag }}
-          commit: ${{ github.ref_name }}
-          token: ${{ secrets.GH_TOKEN }}
-          skipIfReleaseExists: true
+          tag_name: ${{ steps.version-check.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          generate_release_notes: true
