@@ -17,7 +17,7 @@ $ npm install -g @stacks/send-many-stx-cli
 $ stx-bulk-transfer COMMAND
 running command...
 $ stx-bulk-transfer (--version)
-@stacks/send-many-stx-cli/2.0.0 darwin-arm64 node-v22.12.0
+@stacks/send-many-stx-cli/3.0.0 linux-x64 node-v20.18.2
 $ stx-bulk-transfer --help [COMMAND]
 USAGE
   $ stx-bulk-transfer COMMAND
@@ -74,7 +74,7 @@ EXAMPLES
   $ stx-bulk-transfer deploy-contract memo-expected -k my_private_key -n testnet -b
 ```
 
-_See code: [src/commands/deploy-contract.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/src/commands/deploy-contract.ts)_
+_See code: [src/commands/deploy-contract.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v3.0.0/src/commands/deploy-contract.ts)_
 
 ## `stx-bulk-transfer help [COMMAND]`
 
@@ -145,7 +145,7 @@ EXAMPLES
   $ stx-bulk-transfer send-many STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100 ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50 -k my_private_key -n testnet -b
 ```
 
-_See code: [src/commands/send-many.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/src/commands/send-many.ts)_
+_See code: [src/commands/send-many.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v3.0.0/src/commands/send-many.ts)_
 
 ## `stx-bulk-transfer send-many-memo [RECIPIENTS]`
 
@@ -197,7 +197,7 @@ EXAMPLES
   $ stx-bulk-transfer send-many-memo STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,hello ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50,memo2 -k my_private_key -n testnet -b
 ```
 
-_See code: [src/commands/send-many-memo.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/src/commands/send-many-memo.ts)_
+_See code: [src/commands/send-many-memo.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v3.0.0/src/commands/send-many-memo.ts)_
 
 ## `stx-bulk-transfer send-many-memo-safe [RECIPIENTS]`
 
@@ -253,7 +253,7 @@ EXAMPLES
   $ stx-bulk-transfer send-many-memo-safe STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,100,hello ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,50,memo2 -k my_private_key -n testnet -b
 ```
 
-_See code: [src/commands/send-many-memo-safe.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/src/commands/send-many-memo-safe.ts)_
+_See code: [src/commands/send-many-memo-safe.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v3.0.0/src/commands/send-many-memo-safe.ts)_
 
 ## `stx-bulk-transfer validate-address [ADDRESS]`
 
@@ -278,5 +278,5 @@ EXAMPLES
   $ stx-bulk-transfer validate-address SP000000000000000000002Q6VF78 -n mainnet
 ```
 
-_See code: [src/commands/validate-address.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v2.0.0/src/commands/validate-address.ts)_
+_See code: [src/commands/validate-address.ts](https://github.com/stacks-network/send-many-stx-cli/blob/v3.0.0/src/commands/validate-address.ts)_
 <!-- commandsstop -->
