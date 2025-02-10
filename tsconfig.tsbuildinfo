@@ -1,1 +1,1 @@
-{"root":["./src/builder.ts","./src/index.ts","./src/start.ts","./src/util.ts","./src/commands/deploy-contract.ts","./src/commands/send-many-memo-safe.ts","./src/commands/send-many-memo.ts","./src/commands/send-many.ts","./src/commands/validate-address.ts"],"version":"5.7.3"}
+{"root":["./src/builder.ts","./src/index.ts","./src/util.ts","./src/commands/deploy-contract.ts","./src/commands/send-many-memo-safe.ts","./src/commands/send-many-memo.ts","./src/commands/send-many.ts","./src/commands/validate-address.ts"],"version":"5.7.3"}

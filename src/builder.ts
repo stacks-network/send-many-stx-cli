@@ -1,22 +1,21 @@
+import { StacksNetwork } from '@stacks/network';
 import {
-  makeContractCall,
-  tupleCV,
-  standardPrincipalCV,
-  uintCV,
+  bufferCVFromString,
+  ClarityValue,
+  fetchFeeEstimate,
+  getAddressFromPrivateKey,
   listCV,
+  makeContractCall,
+  makeSTXTokenTransfer,
+  Pc,
   PostConditionMode,
   SignedContractCallOptions,
-  getAddressFromPrivateKey,
-  StandardPrincipalCV,
-  UIntCV,
-  BufferCV,
-  bufferCVFromString,
   SignedTokenTransferOptions,
-  makeSTXTokenTransfer,
-  fetchFeeEstimate,
-  Pc,
+  standardPrincipalCV,
+  tupleCV,
+  TupleData,
+  uintCV,
 } from '@stacks/transactions';
-import { StacksNetwork } from '@stacks/network';
 
 export interface Recipient {
   /**
@@ -31,46 +30,39 @@ export interface Recipient {
 }
 
 interface SendOptions {
+  contractIdentifier: string;
+  feeMultiplier?: number;
   network: StacksNetwork;
+  nonce?: number;
   recipients: Recipient[];
   senderKey: string;
-  contractIdentifier: string;
-  nonce?: number;
-  feeMultiplier?: number;
   withMemo?: boolean;
 }
 
 interface SendStxTransferOptions {
+  feeMultiplier?: number;
   network: StacksNetwork;
+  nonce?: number;
   recipient: Recipient;
   senderKey: string;
-  nonce?: number;
-  feeMultiplier?: number;
   withMemo?: boolean;
 }
 
-interface RecipientTuple {
-  to: StandardPrincipalCV;
-  ustx: UIntCV;
-  memo?: BufferCV;
-  [key: string]: any;
-}
-
 export async function sendStxTransfer({
-  recipient,
-  network,
-  senderKey,
-  nonce,
   feeMultiplier,
+  network,
+  nonce,
+  recipient,
+  senderKey,
   withMemo,
 }: SendStxTransferOptions) {
   const sendAmount = BigInt(recipient.amount);
 
   const options: SignedTokenTransferOptions = {
-    recipient: standardPrincipalCV(recipient.address),
     amount: sendAmount,
-    senderKey,
     network,
+    recipient: standardPrincipalCV(recipient.address),
+    senderKey,
   };
   if (withMemo) {
     options.memo = recipient.memo;
@@ -92,12 +84,12 @@ export async function sendStxTransfer({
 }
 
 export async function sendMany({
-  recipients,
-  network,
-  senderKey,
   contractIdentifier,
-  nonce,
   feeMultiplier,
+  network,
+  nonce,
+  recipients,
+  senderKey,
   withMemo,
 }: SendOptions) {
   const [contractAddress, contractName] = contractIdentifier.split('.');
@@ -105,14 +97,15 @@ export async function sendMany({
   let sum = 0n;
 
   const recipientTuples = recipients.map(recipient => {
-    sum = sum + BigInt(recipient.amount);
-    const recipientTuple: RecipientTuple = {
+    sum += BigInt(recipient.amount);
+    const recipientTuple: TupleData<ClarityValue> = {
       to: standardPrincipalCV(recipient.address),
       ustx: uintCV(recipient.amount),
     };
     if (withMemo) {
       recipientTuple.memo = bufferCVFromString(recipient.memo || '');
     }
+
     return tupleCV(recipientTuple);
   });
 
@@ -121,16 +114,16 @@ export async function sendMany({
   const options: SignedContractCallOptions = {
     contractAddress,
     contractName,
-    functionName: 'send-many',
     functionArgs: [recipientListCV],
-    senderKey,
+    functionName: 'send-many',
+    network,
     postConditionMode: PostConditionMode.Deny,
     postConditions: [
       Pc.origin()
         .willSendEq(sum)
         .ustx(),
     ],
-    network,
+    senderKey,
   };
 
   if (nonce !== undefined) options.nonce = nonce;
@@ -149,7 +142,7 @@ export async function sendMany({
 }
 
 export function isNormalInteger(str: string) {
-  var n = Math.floor(Number(str));
+  const n = Math.floor(Number(str));
   return n !== Infinity && String(n) === str && n >= 0;
 }
 

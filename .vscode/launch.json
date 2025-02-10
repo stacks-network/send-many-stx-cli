@@ -2,32 +2,85 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Test",
       "type": "node",
       "request": "launch",
-      "name": "Deploy send-many-memo contract",
-      "preLaunchTask": "npm: build",
-      "args": [
-        "${workspaceFolder}/src/start.ts",
-        "deploy-contract", "send-many-memo",
-        "-n=testnet", 
-        "--broadcast",
-        "-k=<YOUR_PRIVATE_KEY>",
+      "runtimeArgs": [
+        "${workspaceRoot}/node_modules/.bin/mocha",
+        "--forbid-only",
+        "test/**/*.test.ts",
+        // "--grep", "runs send-many mainnet"
       ],
-      "outputCapture": "std",
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Perform send-many-memo contract-call",
-      "preLaunchTask": "npm: build",
+      "name": "deploy-contract send-many-memo testnet",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/bin/dev.js",
       "args": [
-        "${workspaceFolder}/bin/run",
-        "send-many-memo", "STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,1,hello", "ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,5,memo2", 
-        "-n=testnet", 
-        "--broadcast",
-        "-k=<YOUR_PRIVATE_KEY>",
+        "deploy-contract",
+        "send-many-memo",
+        "-n=testnet",
+        "-k=00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
       ],
-      "outputCapture": "std"
-    }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "deploy-contract send-many-memo mainnet",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/bin/dev.js",
+      "args": [
+        "deploy-contract",
+        "send-many-memo",
+        "-n=mainnet",
+        "-k=00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "send-many-memo testnet",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/bin/dev.js",
+      "args": [
+        "send-many-memo",
+        "STADMRP577SC3MCNP7T3PRSTZBJ75FJ59JGABZTW,1,hello",
+        "ST2WPFYAW85A0YK9ACJR8JGWPM19VWYF90J8P5ZTH,5,memo2",
+        "--jsonOutput",
+        "-n=testnet",
+        "-k=00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "send-many-memo mainnet",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/bin/dev.js",
+      "args": [
+        "send-many-memo",
+        "SP16MQDBJB2BF21PJGX72R5XA1C32MY747ZSAR1QY,1,hello",
+        "SP2TA4FGB43WVAS8MVS6YCWTSN2BZNQ1ASGEAKSDD,5,memo2",
+        "--jsonOutput",
+        "-n=mainnet",
+        "-k=00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "send-many-memo-safe testnet",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/bin/dev.js",
+      "args": [
+        "send-many-memo-safe",
+        "ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B,1",
+        "--jsonOutput",
+        "-n=testnet",
+        "-k=00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+      ],
+    },
   ]
 }
